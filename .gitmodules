@@ -1,0 +1,3 @@
+[submodule "python-bulletproofs"]
+	path = python-bulletproofs
+	url = https://github.com/wborgeaud/python-bulletproofs.git
