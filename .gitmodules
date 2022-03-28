@@ -1,3 +1,6 @@
 [submodule "python-bulletproofs"]
 	path = python-bulletproofs
 	url = https://github.com/wborgeaud/python-bulletproofs.git
+[submodule "common-ec-cairo"]
+	path = common-ec-cairo
+	url = https://github.com/EulerSmile/common-ec-cairo.git
