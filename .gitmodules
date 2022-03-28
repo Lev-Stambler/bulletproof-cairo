@@ -4,3 +4,6 @@
 [submodule "common-ec-cairo"]
 	path = common-ec-cairo
 	url = https://github.com/EulerSmile/common-ec-cairo.git
+[submodule "ff-cairo"]
+	path = ff-cairo
+	url = https://github.com/EulerSmile/ff-cairo.git
