@@ -1,0 +1,1 @@
+#func hash_modp()

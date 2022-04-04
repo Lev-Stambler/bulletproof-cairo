@@ -40,11 +40,10 @@ func main{output_ptr : felt*, range_check_ptr: felt}(
     local n_transcript_entries: felt
     %{
         import sys
-        #import os
 
         sys.path.insert(1, './python_bulletproofs')
         sys.path.insert(1, './python_bulletproofs/src')
-        #print(sys.path, os.getcwd())
+
         from utils.transcript import Transcript
         from utils.elliptic_curve_hash import elliptic_hash
         from utils.utils import ModP, mod_hash, inner_product
