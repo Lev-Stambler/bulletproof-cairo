@@ -36,7 +36,32 @@ func main{output_ptr : felt*, range_check_ptr: felt}(
 ):
     alloc_locals
     local transcript_entries: TranscriptEntry*
-    local n_trancript_entries: felt
+    local transcript_seed: felt
+    local n_transcript_entries: felt
+    %{
+        import sys
+        #import os
+
+        sys.path.insert(1, './python_bulletproofs')
+        sys.path.insert(1, './python_bulletproofs/src')
+        #print(sys.path, os.getcwd())
+        from utils.transcript import Transcript
+        from utils.elliptic_curve_hash import elliptic_hash
+        from utils.utils import ModP, mod_hash, inner_product
+        from fastecdsa.curve import secp256k1, Curve
+
+        CURVE: Curve = secp256k1
+        L1 = elliptic_hash(str("AAAA").encode(), CURVE)
+        R1 = elliptic_hash(str("BBBB").encode(), CURVE)
+        x = ModP(69, 100)
+
+        transcript = Transcript()
+        transcript.add_point(L1)
+        transcript.add_point(R1)
+        transcript.add_number(x)
+        Transcript.convert_to_cairo(ids, memory, segments, transcript.digest)
+    %}
+    serialize_word([transcript_entries].x)
     let (v1: felt*) = alloc()
     let (v2: felt*) = alloc()
     let (e1: felt*) = alloc()
@@ -51,10 +76,6 @@ func main{output_ptr : felt*, range_check_ptr: felt}(
     assert [v2 + 2] = 12
     let (x) = multi_exp{range_check_ptr = range_check_ptr}(v1, e1, 3)
     let (r: felt*) = elem_wise_prod(v1, v2, 3)
-    serialize_word(x)
-    serialize_word([r])
-    serialize_word([r + 1])
-    serialize_word([r + 2])
     return()
 end
 
