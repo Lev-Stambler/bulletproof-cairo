@@ -5,8 +5,3 @@ struct TranscriptEntry:
     member R: EcPoint
     member x: felt
 end
-
-struct Transcript:
-    member n: felt
-    member transcript_entries: TranscriptEntry*
-end

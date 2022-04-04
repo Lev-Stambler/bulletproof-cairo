@@ -4,6 +4,7 @@ from starkware.cairo.common.serialize import serialize_word
 from starkware.cairo.common.alloc import alloc
 from src.vector_utils import elem_wise_prod, multi_exp
 from src.innerproduct.verifier_innerproduct_2 import verify as verify_innerproduct_2
+from src.structs import TranscriptEntry
 
 func array_sum(arr: felt*, size) -> (sum):
     if size == 0:
@@ -34,6 +35,8 @@ end
 func main{output_ptr : felt*, range_check_ptr: felt}(
 ):
     alloc_locals
+    local transcript_entries: TranscriptEntry*
+    local n_trancript_entries: felt
     let (v1: felt*) = alloc()
     let (v2: felt*) = alloc()
     let (e1: felt*) = alloc()
