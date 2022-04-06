@@ -3,6 +3,31 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bitwise import bitwise_and, bitwise_not
 from starkware.cairo.common.math_cmp import is_le_felt
 
+func felts_to_bytes{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
+    input: felt*,
+    n: felt
+) -> (output: felt*):
+    let (ptr) = alloc()
+    let (ptr) = _felts_to_bytes(input, n, 0, ptr)
+    return (output = ptr)
+end
+
+func _felts_to_bytes{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
+    input: felt*,
+    n: felt,
+    i: felt,
+    output: felt*
+) -> (output: felt*):
+    if i == n:
+        return (output = output)
+    end
+
+    let (output) = _felt_to_bytes([input + i], output + 24 * i, 0)
+    let (output) = _felts_to_bytes(input, n, i + 1, output - 24 * i)
+    return (output = output)
+end
+
+
 # Returns 24 bytes, little endian, representing the input felt
 func felt_to_bytes{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
     input: felt
