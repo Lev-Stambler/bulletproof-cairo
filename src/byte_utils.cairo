@@ -3,7 +3,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bitwise import bitwise_and, bitwise_not
 from starkware.cairo.common.math_cmp import is_le_felt
 
-# Felts to 6 32 bit word
+# Felts to 8 32 bit word
 func felts_to_32_bit_word{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
     input: felt*,
     n: felt
@@ -23,13 +23,13 @@ func _felts_to_32_bit_word{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
         return (output = output)
     end
 
-    let (output) = _felt_to_32_bit_word([input + i], output + 6 * i, 0)
-    let (output) = _felts_to_32_bit_word(input, n, i + 1, output - 6 * i)
+    let (output) = _felt_to_32_bit_word([input + i], output + 8 * i, 0)
+    let (output) = _felts_to_32_bit_word(input, n, i + 1, output - 8 * i)
     return (output = output)
 end
 
 
-# Returns 6 32 bit words, little endian, representing the input felt
+# Returns 8 32 bit words, little endian, representing the input felt
 func felt_to_32_bit_word{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
     input: felt
 ) -> (output: felt*):
@@ -45,7 +45,7 @@ func _felt_to_32_bit_word{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
     i: felt
 ) -> (output: felt*):
     alloc_locals
-    if i == 6:
+    if i == 8:
         return (output = output)
     end
 
