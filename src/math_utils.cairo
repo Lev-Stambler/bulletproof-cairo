@@ -25,3 +25,49 @@ func divide_and_remainder{range_check_ptr}(n: felt, d: felt) -> (q: felt, r: fel
 
     return (q = q, r=r)
 end
+
+
+# TODO: have code that verifies the inverse
+func inverse_mod_p{range_check_ptr}(x: felt, p: felt) -> (inv: felt):
+    alloc_locals 
+    local inv: felt
+    %{
+        sys.path.insert(1, './python_bulletproofs')
+        sys.path.insert(1, './python_bulletproofs/src')
+
+        from utils.utils import ModP, mod_hash, inner_product
+
+        x_modp = ModP(ids.x, ids.p)
+        ids.inv = x_modp.inv()
+    %}
+
+
+    return (inv = inv)
+end
+
+# Exponentiate x ^ y
+# TODO: check that this is correct
+func variable_exponentiaition{range_check_ptr}(x: felt, y: felt) -> (exp: felt):
+    alloc_locals 
+    local exp: felt
+    %{
+        ids.exp = pow(ids.x, ids.y, PRIME)
+    %}
+
+
+    return (exp = exp)
+end
+
+
+
+# Only works for a small x
+# TODO: speedup
+# func slow_multiplication_mod_p{range_check_ptr}(x: felt, y: felt, p: felt) -> (output: felt):
+#     if x == 1:
+#         return (output = y)
+#     end
+#     let (r) = slow_multiplication_mod_p(x - 1, y, p)
+#     let not_modded = r + y
+#     let (_, modded) = divide_and_remainder(not_modded, p)
+#     return (output = modded)
+# end

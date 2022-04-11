@@ -37,7 +37,7 @@ func main{output_ptr : felt*, range_check_ptr: felt}(
     alloc_locals
     local transcript_entries: TranscriptEntry*
     local transcript_seed: felt
-    local n_transcript_entries: felt
+    local n_rounds: felt
     %{
         import sys
 

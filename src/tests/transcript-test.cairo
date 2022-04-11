@@ -39,6 +39,6 @@ func main{output_ptr : felt*, range_check_ptr: felt}():
     assert [transcript_entries].x = 69
     assert transcript_entries[1].x = 42
     assert transcript.transcript_seed = 11
-    assert transcript.n_transcript_entries = 2
+    assert transcript.n_rounds = 2
     return()
 end
