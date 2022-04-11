@@ -49,14 +49,15 @@ func get_ss{bitwise_ptr : BitwiseBuiltin*, range_check_ptr: felt*}(ss: felt*, n:
     return ()
 end
 
-func get_final_g{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}
-        (ss: felt*, n: felt, transcript: Transcript*, gs: EcPoint*, i: felt, p: felt) -> (g: EcPoint*):
-    if i == n:
-        return ()
-    end
-
-    return ()
-end
+# func get_final_g{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}
+#         (ss: felt*, n: felt, transcript: Transcript*, gs: EcPoint*, i: felt, p: felt) -> (g: EcPoint*):
+#     if i == n:
+          # Have identity element here
+#         return ()
+#     end
+    
+#     return ()
+# end
 
 # Return 0 if successful, otherwise return 1
 func verify(gs: EcPoint*, hs: EcPoint*, u: EcPoint*, P: EcPoint*, proof: ProofInnerproduct2*, transcript: Transcript*) ->
