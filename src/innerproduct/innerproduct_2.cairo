@@ -1,8 +1,9 @@
 %builtins output range_check
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from src.structs import Transcript, TranscriptEntry, ProofInnerproduct2
-from src.math_utils import inverse_mod_p, variable_exponentiaition
-from common_ec_cairo.ec.ec import EcPoint
+from src.math_utils import inverse_mod_p, variable_exponentiaition, felt_to_bigint
+from common_ec_cairo.ec.ec import EcPoint, ec_mul, ec_add
+from common_ec_cairo.ec.bigint import BigInt3
 from starkware.cairo.common.bitwise import bitwise_and 
 
 # Return a 1 if the transcript was successfully verified
@@ -44,20 +45,10 @@ func get_ss{bitwise_ptr : BitwiseBuiltin*, range_check_ptr: felt*}(ss: felt*, n:
     if i == n:
         return ()
     end
-    let ssi = get_ssi(transcript, i, 0, p)
+    let (ssi: felt) = get_ssi(transcript, i, 0, p)
     assert [ss + i] = ssi
     return ()
 end
-
-# func get_final_g{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}
-#         (ss: felt*, n: felt, transcript: Transcript*, gs: EcPoint*, i: felt, p: felt) -> (g: EcPoint*):
-#     if i == n:
-          # Have identity element here
-#         return ()
-#     end
-    
-#     return ()
-# end
 
 # Return 0 if successful, otherwise return 1
 func verify(gs: EcPoint*, hs: EcPoint*, u: EcPoint*, P: EcPoint*, proof: ProofInnerproduct2*, transcript: Transcript*) ->

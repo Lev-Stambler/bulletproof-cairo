@@ -8,7 +8,6 @@ func main{output_ptr : felt*, range_check_ptr: felt}():
     local transcript_entries: TranscriptEntry*
     %{
         import sys
-
         sys.path.insert(1, './python_bulletproofs')
         sys.path.insert(1, './python_bulletproofs/src')
 
