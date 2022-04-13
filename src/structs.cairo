@@ -1,9 +1,10 @@
 from common_ec_cairo.ec.ec import EcPoint
+from common_ec_cairo.ec.bigint import BigInt3
 
 struct TranscriptEntry:
     member L: EcPoint
     member R: EcPoint
-    member x: felt
+    member x: BigInt3
 end
 
 struct Transcript:
