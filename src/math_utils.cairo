@@ -64,25 +64,19 @@ func variable_exponentiaition{range_check_ptr}(x: BigInt3, y: BigInt3, p: BigInt
     return (exp = exp)
 end
 
-# func felt_to_bigint(x: felt) -> (bigint: BigInt3):
-#     alloc_locals
-#     local bigint3: BigInt3*
-#     %{
-#         import sys
-#         sys.path.insert(1, './python_bulletproofs')
-#         sys.path.insert(1, './python_bulletproofs/src')
+func felt_to_bigint(x: felt) -> (bigint: BigInt3):
+    alloc_locals
+    local bigint3: BigInt3
+    %{
+        import sys
+        sys.path.insert(1, './python_bulletproofs')
+        sys.path.insert(1, './python_bulletproofs/src')
 
-#         from utils.utils import to_cairo_big_int
-#         d0, d1, d2 = to_cairo_big_int(ids.x)
-#         ids.bigint3 = bigint3 = segments.add()
-
-#         memory[bigint3] = d0
-#         memory[bigint3 + 1] = d1
-#         memory[bigint3 + 2] = d2
-#     %}
-#     assert bigint3.d0 + bigint3.d1 * BASE + bigint3.d2 * BASE = x
-#     return (bigint=bigint3[0])
-# end
+        from utils.utils import to_cairo_big_int
+        ids.bigint3.d0, ids.bigint3.d1, ids.bigint3.d2 = to_cairo_big_int(ids.x)
+    %}
+    return (bigint=bigint3)
+end
 
 
 

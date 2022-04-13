@@ -132,9 +132,7 @@ func test_multiexp{output_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
         ids.gs = gs = segments.add()
         for i, g in enumerate(gs_py):
             felts = EC.elem_to_cairo(g)
-            # print("AAA", felts)
             for j, f in enumerate(felts):
-                print(6 * i + j)
                 memory[gs + 6 * i + j] = f
         
         multi_exp = Pip256k1.multiexp(gs_py, ss_py)
@@ -151,7 +149,6 @@ func test_multiexp{output_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
         y1 = felts[4]
         y2 = felts[5]
 
-        print(felts, ids.cairo_multi_exp.x.d0)
         assert x0 == ids.cairo_multi_exp.x.d0
         assert x1 == ids.cairo_multi_exp.x.d1
         assert x2 == ids.cairo_multi_exp.x.d2

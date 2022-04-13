@@ -23,23 +23,24 @@ func test_run_blake2s_and_finalize{output_ptr: felt*, range_check_ptr, bitwise_p
 
         sys.path.insert(1, './python_bulletproofs')
         sys.path.insert(1, './python_bulletproofs/src')
-        from utils.utils import ModP, mod_hash, inner_product
-        from fastecdsa.curve import P224, Curve
+        from utils.utils import ModP, mod_hash, inner_product, from_cairo_big_int
+        from fastecdsa.curve import secp256k1, P224, Curve
 
 
         felts = [memory[ids.felts + i] for i in range(4)]
-        pythonret = mod_hash(felts, P224.q, PRIME)
+        pythonret = mod_hash(felts, secp256k1.q, PRIME)
     %}
 
     let (hashed) = blake2s_hash_felts{
         output_ptr=output_ptr,
         bitwise_ptr=bitwise_ptr,
         range_check_ptr=range_check_ptr,
-        blake2s_ptr=blake2s_ptr}(felts, 4, P224_Order)
+        blake2s_ptr=blake2s_ptr}(felts, 4)
 
     %{
-        print(pythonret, ids.hashed)
-        assert(ModP(ids.hashed, ids.P224_Order) == pythonret)
+        hashed = from_cairo_big_int(ids.hashed.d0, ids.hashed.d1, ids.hashed.d2)
+        print(pythonret, hashed)
+        assert(hashed == pythonret.x)
     %}
 
 
