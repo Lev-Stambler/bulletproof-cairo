@@ -33,7 +33,7 @@ func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
         from random import randint
         from fastecdsa.curve import secp256k1, Curve
 
-        from src.pippenger.group import EC
+        from pippenger.group import EC
         from innerproduct.inner_product_prover import NIProver, FastNIProver2
         from innerproduct.inner_product_verifier import SUPERCURVE, Verifier1, Verifier2
         from utils.commitments import vector_commitment
@@ -44,7 +44,7 @@ func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
         CURVE = SUPERCURVE
 
         # Have 3 rounds
-        i = 3
+        i = 0
 
 
         # TODO: the following will be loaded from a file
@@ -64,7 +64,6 @@ func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
     %{
         a = [mod_hash(str(i).encode() + seeds[3], p) for i in range(N)]
         b = [mod_hash(str(i).encode() + seeds[4], p) for i in range(N)]
-        # TODO: set P
         P = vector_commitment(g, h, a, b) + inner_product(a, b) * u
         set_ec_points(ids, segments, memory, "P", [P])
     %}
@@ -75,9 +74,15 @@ func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
         proof = Prov.prove() 
         # Convert the proof into a cairo format
         proof.convert_to_cairo(ids, memory, segments, len(g))
+
+        Verif = Verifier2(g, h, u, P, proof, prime=p)
+        # For print out purposes
+        Verif.verify()
+
     %}
 
-    verify_innerproduct_2(gs, hs, u[0], P[0], proof_innerprod_2, transcript, prime)
+    let (res: felt) = verify_innerproduct_2(gs, hs, u[0], P[0], proof_innerprod_2, transcript, prime)
+    assert res = 1
 
 
     return ()

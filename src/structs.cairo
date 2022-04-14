@@ -17,7 +17,7 @@ end
 # Represents the proof passed to the verifier
 # not including the transcript entries
 struct ProofInnerproduct2:
-    member a: felt
-    member b: felt
+    member a: BigInt3
+    member b: BigInt3
     member n: felt
 end

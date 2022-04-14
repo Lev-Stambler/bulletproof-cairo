@@ -78,17 +78,67 @@ func verify_innerproduct_2{ range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(gs: E
     let (ssinv: BigInt3*) = alloc()
     let (transcript_verified) = verify_transcript_inner_product_2(transcript, 0)
 
-
-    let (ss, local ssinv) = get_ss_and_inverse(ss, ssinv, proof.n, transcript, 0, p)
-    let (g: EcPoint) = multi_exp(ss, proof.n, gs)
-    let (h: EcPoint) = multi_exp(ssinv, proof.n, hs)
-
     # Fail if the transcript is not verified
     if transcript_verified == 0:
         return (success = 0)
     end
 
+    let (ss, ssinv) = get_ss_and_inverse(ss, ssinv, proof.n, transcript, 0, p)
+    let (g: EcPoint) = multi_exp(ss, proof.n, gs)
+    let (h: EcPoint) = multi_exp(ssinv, proof.n, hs)
 
+    let (g_a: EcPoint) = ec_mul(g, proof.a)
+
+    let (h_b: EcPoint) = ec_mul(h, proof.b)
+    
+    # TODO: you can reduce this to 1 EC multiply by doing proof.a * proof.b once
+    # a decent math_utils library for bigints is up
+    let (u_a: EcPoint) = ec_mul(u, proof.a)
+    let (u_ab: EcPoint) = ec_mul(u_a, proof.b)
+    %{
+        import sys
+
+        sys.path.insert(1, './python_bulletproofs')
+        sys.path.insert(1, './python_bulletproofs/src')
+
+        from utils.utils import ModP, mod_hash, inner_product, set_ec_points, from_cairo_big_int
+        print("u_ab", from_cairo_big_int(ids.u_ab.x.d0, ids.u_ab.x.d1, ids.u_ab.x.d2))
+    %}
+
+
+    let (LHS_1: EcPoint) = ec_add(g_a, h_b)
+    let (LHS: EcPoint) = ec_add(LHS_1, u_ab)
+
+    %{
+        import sys
+
+        sys.path.insert(1, './python_bulletproofs')
+        sys.path.insert(1, './python_bulletproofs/src')
+
+        from utils.utils import ModP, mod_hash, inner_product, set_ec_points, from_cairo_big_int
+        print("X", from_cairo_big_int(ids.LHS.x.d0, ids.LHS.x.d1, ids.LHS.x.d2))
+    %}
+    # TODO: have P update properly
+
+    if LHS.x.d0 != P.x.d0:
+        return (success = 0)
+    end
+    if LHS.x.d1 != P.x.d1:
+        return (success = 0)
+    end
+    if LHS.x.d2 != P.x.d2:
+        return (success = 0)
+    end
+    if LHS.y.d0 != P.y.d0:
+        return (success = 0)
+    end
+    if LHS.y.d1 != P.y.d1:
+        return (success = 0)
+    end
+    if LHS.y.d2 != P.y.d2:
+        return (success = 0)
+    end
+    # TODO: the rest
 
     return (success = 1)
 end

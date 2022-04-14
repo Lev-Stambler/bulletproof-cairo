@@ -145,6 +145,12 @@ end
 
 
 func multi_exp{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(ss: BigInt3*, n: felt, gs: EcPoint*) -> (g: EcPoint):
+    %{
+        print("QQQQQQQ", ids.n)
+    %}
     let (g: EcPoint) = multi_exp_internal(ss, n, gs, 0)
+    %{
+        print("QQQQQQQ", ids.n)
+    %}
     return (g=g)
 end
