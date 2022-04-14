@@ -19,4 +19,5 @@ end
 struct ProofInnerproduct2:
     member a: felt
     member b: felt
+    member n: felt
 end

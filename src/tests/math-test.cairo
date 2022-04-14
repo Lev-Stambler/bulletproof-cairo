@@ -137,7 +137,7 @@ func test_multiexp{output_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
         
         multi_exp = Pip256k1.multiexp(gs_py, ss_py)
     %}
-    let (cairo_multi_exp: EcPoint) = multi_exp{bitwise_ptr=bitwise_ptr, range_check_ptr=range_check_ptr}(ss, 3, gs, P224_Order)
+    let (cairo_multi_exp: EcPoint) = multi_exp{bitwise_ptr=bitwise_ptr, range_check_ptr=range_check_ptr}(ss, 3, gs)
 
     %{
         felts = EC.elem_to_cairo(multi_exp)

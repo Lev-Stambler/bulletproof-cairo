@@ -1,7 +1,7 @@
-%builtins output range_check
+from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from src.structs import Transcript, TranscriptEntry, ProofInnerproduct2
-from src.math_utils import inverse_mod_p, variable_exponentiaition, felt_to_bigint
+from src.math_utils import inverse_mod_p, variable_exponentiaition_felts, felt_to_bigint, mult_bigint, multi_exp
 from common_ec_cairo.ec.ec import EcPoint, ec_mul, ec_add
 from common_ec_cairo.ec.bigint import BigInt3
 from starkware.cairo.common.bitwise import bitwise_and 
@@ -10,51 +10,78 @@ from starkware.cairo.common.bitwise import bitwise_and
 func verify_transcript_inner_product_2(transcript: Transcript*, i: felt)
     -> (success: felt):
     # TODO:... may have to have an inner function...
+    # TODO: verify n rounds = log n
     return (success = 1)
 end
 
-func get_ssi{bitwise_ptr : BitwiseBuiltin*, range_check_ptr: felt*}(transcript: Transcript*, i: felt, j: felt, p: felt) ->
-        (ssi: felt):
+func get_ssi{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(transcript: Transcript*, i: felt, j: felt, p: BigInt3) ->
+        (ssi: BigInt3):
 
     alloc_locals
 
     # log_n and the number of "rounds" are the same
     let log_n = transcript.n_rounds
 
+    # TODO: need to have bigint 3 multiplying for the ss...
     if j == log_n:
-        return (ssi = 1)
+        let (one) = felt_to_bigint(1)
+        return (ssi = one)
     end
 
     # A mask for the jth bit of a number at most 2 ** log_n - 1
     # the mask is just a 1 at the jth position
-    let (mask) = variable_exponentiaition{range_check_ptr=range_check_ptr}(2, j)
+    let (mask) = variable_exponentiaition_felts{range_check_ptr=range_check_ptr}(2, j)
     let (local b_i_j) = bitwise_and(i, mask)
 
     let (r) = get_ssi(transcript, i, j + 1, p)
     if b_i_j == 0:
         let (curr_mult) = inverse_mod_p(transcript.transcript_entries[j].x, p)
-        return (ssi = r * curr_mult)
+        let (ssi) = mult_bigint(r, curr_mult, p)
+        return (ssi = ssi)
     else:
         let curr_mult = transcript.transcript_entries[j].x
-        return (ssi = r * curr_mult)
+        let (ssi) = mult_bigint(r, curr_mult, p)
+        return (ssi = ssi)
     end
 end
 
 # As per page 15 of the paper
-func get_ss{bitwise_ptr : BitwiseBuiltin*, range_check_ptr: felt*}(ss: felt*, n: felt, transcript: Transcript*, i: felt, p: felt):
+func get_ss_and_inverse{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
+        ss: BigInt3*,
+        ssinv: BigInt3*,
+        n: felt,
+        transcript: Transcript*,
+        i: felt, p: BigInt3
+    )->(ss_ret: BigInt3*, ssinv_ret: BigInt3*):
     if i == n:
-        return ()
+        return (ss_ret=ss, ssinv_ret=ssinv)
     end
-    let (ssi: felt) = get_ssi(transcript, i, 0, p)
-    assert [ss + i] = ssi
-    return ()
+    let (ssi: BigInt3) = get_ssi(transcript, i, 0, p)
+    let (ssi_inv: BigInt3) = inverse_mod_p(ssi, p)
+
+    # TODO: syntax??
+    assert ss[i] = ssi
+    assert ssinv[i] = ssi_inv
+
+    let (ss, ssinv) = get_ss_and_inverse(ss, ssinv, n, transcript, i + 1, p)
+    return (ss_ret=ss, ssinv_ret=ssinv)
 end
 
+
 # Return 0 if successful, otherwise return 1
-func verify(gs: EcPoint*, hs: EcPoint*, u: EcPoint*, P: EcPoint*, proof: ProofInnerproduct2*, transcript: Transcript*) ->
+func verify_innerproduct_2{ range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(gs: EcPoint*, hs: EcPoint*, u: EcPoint, P: EcPoint, proof: ProofInnerproduct2, transcript: Transcript*, p: BigInt3) ->
         (success: felt):
 
+    alloc_locals
+
+    let (ss: BigInt3*) = alloc()
+    let (ssinv: BigInt3*) = alloc()
     let (transcript_verified) = verify_transcript_inner_product_2(transcript, 0)
+
+
+    let (ss, local ssinv) = get_ss_and_inverse(ss, ssinv, proof.n, transcript, 0, p)
+    let (g: EcPoint) = multi_exp(ss, proof.n, gs)
+    let (h: EcPoint) = multi_exp(ssinv, proof.n, hs)
 
     # Fail if the transcript is not verified
     if transcript_verified == 0:
@@ -64,51 +91,4 @@ func verify(gs: EcPoint*, hs: EcPoint*, u: EcPoint*, P: EcPoint*, proof: ProofIn
 
 
     return (success = 1)
-end
-
-# Return 1 if the proof is verified, otherwise return 0
-func inner_product() -> (verified: felt):
-    alloc_locals
-
-    local transcript: Transcript*
-    local proof_innerprod_2: ProofInnerproduct2*
-    local transcript_entries: TranscriptEntry*
-    %{
-        import sys
-
-        sys.path.insert(1, './python_bulletproofs')
-        sys.path.insert(1, './python_bulletproofs/src')
-
-        import os
-        from random import randint
-        from fastecdsa.curve import P224, Curve
-
-        from src.pippenger.group import EC
-        from innerproduct.inner_product_prover import NIProver, FastNIProver2
-        from innerproduct.inner_product_verifier import SUPERCURVE, Verifier1, Verifier2
-        from utils.commitments import vector_commitment
-        from utils.utils import ModP, mod_hash, inner_product
-        from utils.elliptic_curve_hash import elliptic_hash_P224        
-
-        seeds = [os.urandom(10) for _ in range(6)]
-
-        # TODO: the following will be loaded from a file
-        p = SUPERCURVE.q
-        N = 2 ** i
-        g = [elliptic_hash_P224(str(i).encode() + seeds[0], CURVE) for i in range(N)]
-        h = [elliptic_hash_P224(str(i).encode() + seeds[1], CURVE) for i in range(N)]
-        u = elliptic_hash_P224(seeds[2], CURVE)
-        a = [mod_hash(str(i).encode() + seeds[3], p) for i in range(N)]
-        b = [mod_hash(str(i).encode() + seeds[4], p) for i in range(N)]
-        P = vector_commitment(g, h, a, b) + inner_product(a, b) * u
-
-        Prov = FastNIProver2(g, h, u, P, a, b, CURVE, prime=p)
-        proof = Prov.prove() 
-
-        # Convert the proof into a cairo format
-        proof.convert_to_cairo(ids, memory, segments)
-    %}
-
-
-    return (verified = 1)
 end

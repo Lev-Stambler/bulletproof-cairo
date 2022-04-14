@@ -44,6 +44,19 @@ func inverse_mod_p(x: BigInt3, p: BigInt3) -> (inv: BigInt3):
     return (inv = inv)
 end
 
+# TODO: check that this is correct
+func variable_exponentiaition_felts{range_check_ptr}(x: felt, y: felt) -> (exp: felt):
+    alloc_locals 
+    local exp: felt
+    %{
+        ids.exp = pow(ids.x, ids.y, PRIME)
+    %}
+
+    return (exp = exp)
+end
+
+
+
 # Exponentiate x ^ y
 # TODO: check that this is correct
 func variable_exponentiaition{range_check_ptr}(x: BigInt3, y: BigInt3, p: BigInt3) -> (exp: BigInt3):
@@ -78,6 +91,24 @@ func felt_to_bigint(x: felt) -> (bigint: BigInt3):
     return (bigint=bigint3)
 end
 
+func mult_bigint(x: BigInt3, y: BigInt3, p: BigInt3) -> (z: BigInt3):
+    alloc_locals
+    local z: BigInt3
+    %{
+        import sys
+        sys.path.insert(1, './python_bulletproofs')
+        sys.path.insert(1, './python_bulletproofs/src')
+
+        from utils.utils import to_cairo_big_int, from_cairo_big_int
+        x = from_cairo_big_int(ids.x.d0, ids.x.d1, ids.x.d2)
+        y = from_cairo_big_int(ids.y.d0, ids.y.d1, ids.y.d2)
+        p = from_cairo_big_int(ids.p.d0, ids.p.d1, ids.p.d2)
+
+        ids.z.d0, ids.z.d1, ids.z.d2 = to_cairo_big_int((x * y) % p)
+    %}
+    return (z = z)
+end
+
 
 
 # Only works for a small x
@@ -97,7 +128,7 @@ end
 # TODO: test me by comparing with python...
 # g \in G
 # and s \in Z
-func multi_exp_internal{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(ss: BigInt3*, n: felt, gs: EcPoint*, i: felt, p: felt) -> (g: EcPoint):
+func multi_exp_internal{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(ss: BigInt3*, n: felt, gs: EcPoint*, i: felt) -> (g: EcPoint):
     alloc_locals
     if i == n - 1:
         let (ec: EcPoint) = ec_mul(gs[i], ss[i])
@@ -106,14 +137,14 @@ func multi_exp_internal{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(ss: BigI
 
     let (local ec: EcPoint) = ec_mul(gs[i], ss[i])
 
-    let (recur: EcPoint) = multi_exp_internal(ss, n, gs, i + 1, p)    
+    let (recur: EcPoint) = multi_exp_internal(ss, n, gs, i + 1)    
     let (prod: EcPoint) = ec_add(ec, recur)
     
     return (g=prod)
 end
 
 
-func multi_exp{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(ss: BigInt3*, n: felt, gs: EcPoint*, p: felt) -> (g: EcPoint):
-    let (g: EcPoint) = multi_exp_internal(ss, n, gs, 0, p)
+func multi_exp{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(ss: BigInt3*, n: felt, gs: EcPoint*) -> (g: EcPoint):
+    let (g: EcPoint) = multi_exp_internal(ss, n, gs, 0)
     return (g=g)
 end
