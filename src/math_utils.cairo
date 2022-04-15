@@ -36,7 +36,7 @@ func inverse_mod_p(x: BigInt3, p: BigInt3) -> (inv: BigInt3):
         p = from_cairo_big_int(ids.p.d0, ids.p.d1, ids.p.d2)
 
         x_modp = ModP(x, p)
-        inv = x_modp.inv().x
+        inv = x_modp.inv().x % p
         ids.inv.d0, ids.inv.d1, ids.inv.d2 = to_cairo_big_int(inv)
     %}
 
@@ -109,21 +109,6 @@ func mult_bigint(x: BigInt3, y: BigInt3, p: BigInt3) -> (z: BigInt3):
     return (z = z)
 end
 
-
-
-# Only works for a small x
-# TODO: speedup
-# func slow_multiplication_mod_p{range_check_ptr}(x: felt, y: felt, p: felt) -> (output: felt):
-#     if x == 1:
-#         return (output = y)
-#     end
-#     let (r) = slow_multiplication_mod_p(x - 1, y, p)
-#     let not_modded = r + y
-#     let (_, modded) = divide_and_remainder(not_modded, p)
-#     return (output = modded)
-# end
-
-
 # TODO: move to a multiexp fn
 # TODO: test me by comparing with python...
 # g \in G
@@ -145,13 +130,7 @@ end
 
 
 func multi_exp{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(ss: BigInt3*, n: felt, gs: EcPoint*) -> (g: EcPoint):
-    %{
-        print("QQQQQQQ", ids.n)
-    %}
     let (g: EcPoint) = multi_exp_internal(ss, n, gs, 0)
-    %{
-        print("QQQQQQQ", ids.n)
-    %}
     return (g=g)
 end
 

@@ -59,7 +59,6 @@ func get_ss_and_inverse{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
     let (ssi: BigInt3) = get_ssi(transcript, i, 0, p)
     let (ssi_inv: BigInt3) = inverse_mod_p(ssi, p)
 
-    # TODO: syntax??
     assert ss[i] = ssi
     assert ssinv[i] = ssi_inv
 
@@ -67,6 +66,7 @@ func get_ss_and_inverse{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
     return (ss_ret=ss, ssinv_ret=ssinv)
 end
 
+# TODO: this is quite slow and needs to be sped up
 func get_final_P_difference{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(transcript: Transcript*, i: felt, p: BigInt3) -> (P_diff: EcPoint): 
     alloc_locals
     let (local x_inv: BigInt3) = inverse_mod_p(transcript.transcript_entries[i].x, p)
@@ -104,19 +104,10 @@ func verify_innerproduct_2{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(gs: Ec
 
     let (ss, ssinv) = get_ss_and_inverse(ss, ssinv, proof.n, transcript, 0, p)
 
-    %{
-        print("ss[0]", from_cairo_big_int(memory[ss], memory[ss + 1], memory[ss + 2]))
-        print("ss[1]", from_cairo_big_int(memory[3 + ss], memory[3 + ss + 1], memory[3 + ss + 2]))
-    %}
-    
     # TODO: does the verifier have to do this step??? (its the suppa expensive one...)
     let (g: EcPoint) = multi_exp(ss, proof.n, gs)
     let (h: EcPoint) = multi_exp(ssinv, proof.n, hs)
 
-    %{
-        print("g", from_cairo_big_int(ids.g.x.d0, ids.g.x.d1, ids.g.x.d2))
-        print("h", from_cairo_big_int(ids.h.x.d0, ids.h.x.d1, ids.h.x.d2))
-    %}
     let (g_a: EcPoint) = ec_mul(g, proof.a)
 
     let (h_b: EcPoint) = ec_mul(h, proof.b)
@@ -125,16 +116,6 @@ func verify_innerproduct_2{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(gs: Ec
     # a decent math_utils library for bigints is up
     let (u_a: EcPoint) = ec_mul(u, proof.a)
     let (u_ab: EcPoint) = ec_mul(u_a, proof.b)
-    %{
-        import sys
-
-        sys.path.insert(1, './python_bulletproofs')
-        sys.path.insert(1, './python_bulletproofs/src')
-
-        from utils.utils import ModP, mod_hash, inner_product, set_ec_points, from_cairo_big_int
-        print("u_ab", from_cairo_big_int(ids.u_ab.x.d0, ids.u_ab.x.d1, ids.u_ab.x.d2))
-    %}
-
 
     let (LHS_1: EcPoint) = ec_add(g_a, h_b)
     let (LHS: EcPoint) = ec_add(LHS_1, u_ab)
@@ -147,18 +128,6 @@ func verify_innerproduct_2{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(gs: Ec
     let (P_diff) = get_final_P_difference(transcript, 0, p)
     let (P_prime) = ec_add(P, P_diff)
 
-    %{
-        import sys
-
-        sys.path.insert(1, './python_bulletproofs')
-        sys.path.insert(1, './python_bulletproofs/src')
-
-        from utils.utils import ModP, mod_hash, inner_product, set_ec_points, from_cairo_big_int
-        print("X", from_cairo_big_int(ids.LHS.x.d0, ids.LHS.x.d1, ids.LHS.x.d2))
-        print("g_a", from_cairo_big_int(ids.g_a.x.d0, ids.g_a.x.d1, ids.g_a.x.d2))
-        print("h_b", from_cairo_big_int(ids.h_b.x.d0, ids.h_b.x.d1, ids.h_b.x.d2))
-        print("PPrime", from_cairo_big_int(ids.P_prime.x.d0, ids.P_prime.x.d1, ids.P_prime.x.d2))
-    %}
     let (success) = check_ec_equal(LHS, P_prime)
     # TODO: have P update properly
 

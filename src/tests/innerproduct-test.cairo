@@ -9,7 +9,7 @@ from src.structs import TranscriptEntry
 from src.structs import ProofInnerproduct2
 
 # Return 1 if the proof is verified, otherwise return 0
-func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
+func test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(i_rounds:felt):
     alloc_locals
 
     local transcript: Transcript*
@@ -20,7 +20,8 @@ func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
     local u: EcPoint*
     local P: EcPoint*
 
-    let prime = BigInt3(P0, P1, P2)
+    local prime: BigInt3
+    #let prime = BigInt3(P0, P1, P2)
     # Set the global parameters (these should be 
     # made explicit to the verifier/ and or loaded by the verifier)
     %{
@@ -37,7 +38,7 @@ func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
         from innerproduct.inner_product_prover import NIProver, FastNIProver2
         from innerproduct.inner_product_verifier import SUPERCURVE, Verifier1, Verifier2
         from utils.commitments import vector_commitment
-        from utils.utils import ModP, mod_hash, inner_product, set_ec_points
+        from utils.utils import ModP, mod_hash, inner_product, set_ec_points, to_cairo_big_int
         from utils.elliptic_curve_hash import elliptic_hash_secp256k1
 
         # Always have the same seeds for easier test consistancy
@@ -47,11 +48,12 @@ func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
 
         # Have a total of "i" rounds
         # for 2 ** i points
-        i = 1
+        i = ids.i_rounds
 
 
         # TODO: the following be a constant
         p = SUPERCURVE.q
+        ids.prime.d0, ids.prime.d1, ids.prime.d2 = to_cairo_big_int(p)
         N = 2 ** i
         g = [elliptic_hash_secp256k1(str(i).encode() + seeds[0], CURVE) for i in range(N)]
         h = [elliptic_hash_secp256k1(str(i).encode() + seeds[1], CURVE) for i in range(N)]
@@ -88,5 +90,12 @@ func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
     assert res = 1
 
 
+    return ()
+end
+
+func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
+    test_with_i_rounds(0)
+    test_with_i_rounds(1)
+    test_with_i_rounds(2)
     return ()
 end
