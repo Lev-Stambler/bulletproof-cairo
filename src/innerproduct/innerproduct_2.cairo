@@ -103,6 +103,11 @@ func verify_innerproduct_2{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(gs: Ec
     end
 
     let (ss, ssinv) = get_ss_and_inverse(ss, ssinv, proof.n, transcript, 0, p)
+
+    %{
+        print("ss[0]", from_cairo_big_int(memory[ss], memory[ss + 1], memory[ss + 2]))
+        print("ss[1]", from_cairo_big_int(memory[3 + ss], memory[3 + ss + 1], memory[3 + ss + 2]))
+    %}
     
     # TODO: does the verifier have to do this step??? (its the suppa expensive one...)
     let (g: EcPoint) = multi_exp(ss, proof.n, gs)
