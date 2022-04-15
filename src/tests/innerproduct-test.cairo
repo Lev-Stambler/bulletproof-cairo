@@ -40,14 +40,17 @@ func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
         from utils.utils import ModP, mod_hash, inner_product, set_ec_points
         from utils.elliptic_curve_hash import elliptic_hash_secp256k1
 
-        seeds = [os.urandom(10) for _ in range(6)]
+        # Always have the same seeds for easier test consistancy
+        # and debugging
+        seeds = [b"a" for _ in range(6)]
         CURVE = SUPERCURVE
 
-        # Have 3 rounds
-        i = 0
+        # Have a total of "i" rounds
+        # for 2 ** i points
+        i = 1
 
 
-        # TODO: the following will be loaded from a file
+        # TODO: the following be a constant
         p = SUPERCURVE.q
         N = 2 ** i
         g = [elliptic_hash_secp256k1(str(i).encode() + seeds[0], CURVE) for i in range(N)]

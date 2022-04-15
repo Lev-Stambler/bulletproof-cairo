@@ -1,7 +1,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from src.structs import Transcript, TranscriptEntry, ProofInnerproduct2
-from src.math_utils import inverse_mod_p, variable_exponentiaition_felts, felt_to_bigint, mult_bigint, multi_exp
+from src.math_utils import inverse_mod_p, variable_exponentiaition_felts, felt_to_bigint, mult_bigint, multi_exp, check_ec_equal
 from common_ec_cairo.ec.ec import EcPoint, ec_mul, ec_add
 from common_ec_cairo.ec.bigint import BigInt3
 from starkware.cairo.common.bitwise import bitwise_and 
@@ -67,9 +67,28 @@ func get_ss_and_inverse{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
     return (ss_ret=ss, ssinv_ret=ssinv)
 end
 
+func get_final_P_difference{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(transcript: Transcript*, i: felt, p: BigInt3) -> (P_diff: EcPoint): 
+    alloc_locals
+    let (local x_inv: BigInt3) = inverse_mod_p(transcript.transcript_entries[i].x, p)
+
+    let (curr_add_L_1: EcPoint) = ec_mul(transcript.transcript_entries[i].L, transcript.transcript_entries[i].x)
+    let (curr_add_L: EcPoint) = ec_mul(curr_add_L_1, transcript.transcript_entries[i].x)
+
+    let (curr_add_R_1: EcPoint) = ec_mul(transcript.transcript_entries[i].R, x_inv)
+    let (curr_add_R: EcPoint) = ec_mul(curr_add_R_1, x_inv)
+    let (curr_diff: EcPoint) = ec_add(curr_add_L, curr_add_R)
+
+    if i == transcript.n_rounds - 1:
+        return (P_diff = curr_diff)
+    end
+    let (recur_diff) = get_final_P_difference(transcript, i + 1, p)
+    let (added_diff) = ec_add(recur_diff, curr_diff)
+    return (P_diff = added_diff)
+end
+
 
 # Return 0 if successful, otherwise return 1
-func verify_innerproduct_2{ range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(gs: EcPoint*, hs: EcPoint*, u: EcPoint, P: EcPoint, proof: ProofInnerproduct2, transcript: Transcript*, p: BigInt3) ->
+func verify_innerproduct_2{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(gs: EcPoint*, hs: EcPoint*, u: EcPoint, P: EcPoint, proof: ProofInnerproduct2, transcript: Transcript*, p: BigInt3) ->
         (success: felt):
 
     alloc_locals
@@ -84,9 +103,15 @@ func verify_innerproduct_2{ range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(gs: E
     end
 
     let (ss, ssinv) = get_ss_and_inverse(ss, ssinv, proof.n, transcript, 0, p)
+    
+    # TODO: does the verifier have to do this step??? (its the suppa expensive one...)
     let (g: EcPoint) = multi_exp(ss, proof.n, gs)
     let (h: EcPoint) = multi_exp(ssinv, proof.n, hs)
 
+    %{
+        print("g", from_cairo_big_int(ids.g.x.d0, ids.g.x.d1, ids.g.x.d2))
+        print("h", from_cairo_big_int(ids.h.x.d0, ids.h.x.d1, ids.h.x.d2))
+    %}
     let (g_a: EcPoint) = ec_mul(g, proof.a)
 
     let (h_b: EcPoint) = ec_mul(h, proof.b)
@@ -109,6 +134,14 @@ func verify_innerproduct_2{ range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(gs: E
     let (LHS_1: EcPoint) = ec_add(g_a, h_b)
     let (LHS: EcPoint) = ec_add(LHS_1, u_ab)
 
+    if transcript.n_rounds == 0:
+        let (success) = check_ec_equal(LHS, P)
+        return (success = success)
+    end
+
+    let (P_diff) = get_final_P_difference(transcript, 0, p)
+    let (P_prime) = ec_add(P, P_diff)
+
     %{
         import sys
 
@@ -117,28 +150,12 @@ func verify_innerproduct_2{ range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(gs: E
 
         from utils.utils import ModP, mod_hash, inner_product, set_ec_points, from_cairo_big_int
         print("X", from_cairo_big_int(ids.LHS.x.d0, ids.LHS.x.d1, ids.LHS.x.d2))
+        print("g_a", from_cairo_big_int(ids.g_a.x.d0, ids.g_a.x.d1, ids.g_a.x.d2))
+        print("h_b", from_cairo_big_int(ids.h_b.x.d0, ids.h_b.x.d1, ids.h_b.x.d2))
+        print("PPrime", from_cairo_big_int(ids.P_prime.x.d0, ids.P_prime.x.d1, ids.P_prime.x.d2))
     %}
+    let (success) = check_ec_equal(LHS, P_prime)
     # TODO: have P update properly
 
-    if LHS.x.d0 != P.x.d0:
-        return (success = 0)
-    end
-    if LHS.x.d1 != P.x.d1:
-        return (success = 0)
-    end
-    if LHS.x.d2 != P.x.d2:
-        return (success = 0)
-    end
-    if LHS.y.d0 != P.y.d0:
-        return (success = 0)
-    end
-    if LHS.y.d1 != P.y.d1:
-        return (success = 0)
-    end
-    if LHS.y.d2 != P.y.d2:
-        return (success = 0)
-    end
-    # TODO: the rest
-
-    return (success = 1)
+    return (success = success)
 end

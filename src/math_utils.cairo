@@ -154,3 +154,25 @@ func multi_exp{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(ss: BigInt3*, n: 
     %}
     return (g=g)
 end
+
+func check_ec_equal(ec1: EcPoint, ec2: EcPoint) -> (success: felt):
+  if ec1.x.d0 != ec2.x.d0:
+        return (success = 0)
+    end
+    if ec1.x.d1 != ec2.x.d1:
+        return (success = 0)
+    end
+    if ec1.x.d2 != ec2.x.d2:
+        return (success = 0)
+    end
+    if ec1.y.d0 != ec2.y.d0:
+        return (success = 0)
+    end
+    if ec1.y.d1 != ec2.y.d1:
+        return (success = 0)
+    end
+    if ec1.y.d2 != ec2.y.d2:
+        return (success = 0)
+    end
+    return (success = 1)
+end
