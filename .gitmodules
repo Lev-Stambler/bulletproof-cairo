@@ -7,3 +7,6 @@
 [submodule "Cairo_SafeMath_git"]
 	url = https://github.com/NethermindEth/Cairo-SafeMath.git
 	path = libs/Cairo_SafeMath_git
+[submodule "common_ec_cairo_git"]
+	url = https://github.com/EulerSmile/common-ec-cairo.git
+	path = libs/common_ec_cairo_git
