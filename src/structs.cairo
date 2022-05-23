@@ -4,7 +4,7 @@ from common_ec_cairo.ec.bigint import BigInt3
 struct TranscriptEntry:
     member L: EcPoint
     member R: EcPoint
-    member x: BigInt3
+    member x: BigIntw3
 end
 
 struct Transcript:
