@@ -4,3 +4,6 @@
 [submodule "common_ec_cairo"]
 	path = common_ec_cairo
 	url = https://github.com/Lev-Stambler/common-ec-cairo.git
+[submodule "Cairo_SafeMath_git"]
+	url = https://github.com/NethermindEth/Cairo-SafeMath.git
+	path = libs/Cairo_SafeMath_git
