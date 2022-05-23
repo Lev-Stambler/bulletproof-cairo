@@ -1,8 +1,10 @@
-from common_ec_cairo.ec.ec import EcPoint, ec_mul, ec_add
+from ec.ec import EcPoint, ec_mul, ec_add
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le_felt
 from common_ec_cairo.ec.param_def import BASE
 from common_ec_cairo.ec.bigint import BigInt3
+
+# TODO: this can be replaced with divmod
 
 # Mod x % p using a Python hint and assert the computation in Cairo
 func remainder{range_check_ptr}(x: BigInt3, p: BigInt3) -> (r: BigInt3):
@@ -25,6 +27,7 @@ end
 
 
 # TODO: have code that verifies the inverse
+# TODO: verify w/ pow
 func inverse_mod_p(x: BigInt3, p: BigInt3) -> (inv: BigInt3):
     alloc_locals 
     local inv: BigInt3
@@ -44,7 +47,7 @@ func inverse_mod_p(x: BigInt3, p: BigInt3) -> (inv: BigInt3):
     return (inv = inv)
 end
 
-# TODO: check that this is correct
+# TODO: change to pow in common
 func variable_exponentiaition_felts{range_check_ptr}(x: felt, y: felt) -> (exp: felt):
     alloc_locals 
     local exp: felt

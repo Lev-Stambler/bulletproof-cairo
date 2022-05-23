@@ -1,5 +1,5 @@
 %builtins range_check bitwise
-from starkware.cairo.common.cairo_blake2s.blake2s import INSTANCE_SIZE, blake2s, finalize_blake2s
+from src.cairo_blake2s.blake2s import INSTANCE_SIZE, blake2s, finalize_blake2s
 
 # Take in an array of felt items and break them up each felt into 32 little endian bytes
 # Then, feed the bytes into blake2s

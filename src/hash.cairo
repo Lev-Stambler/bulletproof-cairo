@@ -1,10 +1,10 @@
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.cairo_blake2s.blake2s import blake2s
 from src.byte_utils import felts_to_32_bit_word
 from starkware.cairo.common.serialize import serialize_word
 from starkware.cairo.common.math import unsigned_div_rem
 from src.math_utils import remainder, felt_to_bigint
+from src.blake2s import blake2s
 from common_ec_cairo.ec.bigint import BigInt3
 
 # TODO: update to work with BigInt3s...

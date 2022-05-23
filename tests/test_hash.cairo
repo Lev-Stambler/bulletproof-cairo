@@ -1,12 +1,14 @@
+%lang starknet
 %builtins output range_check bitwise
 
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.cairo_blake2s.blake2s import INSTANCE_SIZE, blake2s, finalize_blake2s
+from src.cairo_blake2s.blake2s import INSTANCE_SIZE, blake2s, finalize_blake2s
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from src.hash import blake2s_hash_felts
 from src.constants import P224_Order
 
 
+@view
 func test_run_blake2s_and_finalize{output_ptr: felt*, range_check_ptr, bitwise_ptr : BitwiseBuiltin*}():
     alloc_locals
     let (local blake2s_ptr_start) = alloc()
@@ -46,11 +48,4 @@ func test_run_blake2s_and_finalize{output_ptr: felt*, range_check_ptr, bitwise_p
 
     finalize_blake2s(blake2s_ptr_start=blake2s_ptr_start, blake2s_ptr_end=blake2s_ptr)
     return ()
-end
-
-func main{output_ptr: felt*, range_check_ptr: felt, bitwise_ptr: BitwiseBuiltin*}():
-    alloc_locals
-    
-    test_run_blake2s_and_finalize()
-    return()
 end
