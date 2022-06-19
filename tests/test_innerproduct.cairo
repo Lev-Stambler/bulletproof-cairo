@@ -1,15 +1,14 @@
-%builtins range_check bitwise
+%builtins range_check bitwise ec_op
+from starkware.cairo.common.cairo_builtins import EcOpBuiltin
 from src.innerproduct.innerproduct_2 import verify_innerproduct_2
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
-from common_ec_cairo.ec.param_def import BASE, P0, P1, P2, N0, N1, N2, A0, A1, A2, GX0, GX1, GX2, GY0, GY1, GY2
-from common_ec_cairo.ec.bigint import BigInt3
-from common_ec_cairo.ec.ec import EcPoint
+from starkware.cairo.common.ec_point import EcPoint
 from src.structs import Transcript
 from src.structs import TranscriptEntry
 from src.structs import ProofInnerproduct2
 
 # Return 1 if the proof is verified, otherwise return 0
-func test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(i_rounds:felt):
+func test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_ptr: EcOpBuiltin*}(i_rounds:felt):
     alloc_locals
 
     local transcript: Transcript*
@@ -20,10 +19,6 @@ func test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(i_rounds:
     local u: EcPoint*
     local P: EcPoint*
 
-    local prime: BigInt3
-    #let prime = BigInt3(P0, P1, P2)
-    # Set the global parameters (these should be 
-    # made explicit to the verifier/ and or loaded by the verifier)
     %{
         import sys
 
@@ -53,7 +48,6 @@ func test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(i_rounds:
 
         # TODO: the following be a constant
         p = SUPERCURVE.q
-        ids.prime.d0, ids.prime.d1, ids.prime.d2 = to_cairo_big_int(p)
         N = 2 ** i
         g = [elliptic_hash_secp256k1(str(i).encode() + seeds[0], CURVE) for i in range(N)]
         h = [elliptic_hash_secp256k1(str(i).encode() + seeds[1], CURVE) for i in range(N)]
@@ -86,14 +80,14 @@ func test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(i_rounds:
 
     %}
 
-    let (res: felt) = verify_innerproduct_2(gs, hs, u[0], P[0], proof_innerprod_2, transcript, prime)
+    let (res: felt) = verify_innerproduct_2(gs, hs, u[0], P[0], proof_innerprod_2, transcript)
     assert res = 1
 
 
     return ()
 end
 
-func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
+func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_ptr: EcOpBuiltin*}():
     test_with_i_rounds(0)
     test_with_i_rounds(1)
     test_with_i_rounds(2)

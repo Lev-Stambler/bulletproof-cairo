@@ -1,101 +1,8 @@
 %builtins output range_check bitwise
-from common_ec_cairo.ec.ec import EcPoint, ec_mul, ec_add
-from src.math_utils import multi_exp, remainder, inverse_mod_p, variable_exponentiaition
+from starkware.cairo.common.ec import EcPoint, ec_add
+from src.math_utils import multi_exp, ec_mul
 from src.constants import P224_Order
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
-from common_ec_cairo.ec.bigint import BigInt3
-
-
-func test_inverse_mod_p{output_ptr: felt*, range_check_ptr}():
-    alloc_locals
-    local x: BigInt3
-    local p: BigInt3
-
-    %{
-        import sys
-        sys.path.insert(1, './python_bulletproofs')
-        sys.path.insert(1, './python_bulletproofs/src')
-
-        from utils.utils import ModP, mod_hash, inner_product, from_cairo_big_int, to_cairo_big_int
-
-        x = 123456789
-        p = 13
-
-        ids.x.d0, ids.x.d1, ids.x.d2 = to_cairo_big_int(x)
-        ids.p.d0, ids.p.d1, ids.p.d2 = to_cairo_big_int(p)
-    %}
-
-    let (r) = inverse_mod_p(x, p)
-    
-    %{
-        assert from_cairo_big_int(ids.r.d0, ids.r.d1, ids.r.d2) == ModP(x, p).inv().x
-    %}
-
-    return ()
-end
-
-
-func test_variable_exponentiation{output_ptr: felt*, range_check_ptr}():
-    alloc_locals
-    local x: BigInt3
-    local y: BigInt3
-    local p: BigInt3
-
-    %{
-        import sys
-        sys.path.insert(1, './python_bulletproofs')
-        sys.path.insert(1, './python_bulletproofs/src')
-
-        from utils.utils import ModP, mod_hash, inner_product, from_cairo_big_int, to_cairo_big_int
-
-        x = 123456789
-        y = 123456799
-        p = 92723
-
-        ids.x.d0, ids.x.d1, ids.x.d2 = to_cairo_big_int(x)
-        ids.y.d0, ids.y.d1, ids.y.d2 = to_cairo_big_int(y)
-        ids.p.d0, ids.p.d1, ids.p.d2 = to_cairo_big_int(p)
-    %}
-
-    let (r) = variable_exponentiaition{range_check_ptr=range_check_ptr}(x, y, p)
-    
-    %{
-        assert from_cairo_big_int(ids.r.d0, ids.r.d1, ids.r.d2) == pow(x, y, p)
-    %}
-
-    return ()
-end
-
-
-
-func test_remainder{output_ptr: felt*, range_check_ptr}():
-    alloc_locals
-    local x: BigInt3
-    local p: BigInt3
-
-    %{
-        import sys
-        sys.path.insert(1, './python_bulletproofs')
-        sys.path.insert(1, './python_bulletproofs/src')
-
-        from utils.utils import ModP, mod_hash, inner_product, from_cairo_big_int, to_cairo_big_int
-
-        x = 123456789
-        p = 12345
-
-        ids.x.d0, ids.x.d1, ids.x.d2 = to_cairo_big_int(x)
-        ids.p.d0, ids.p.d1, ids.p.d2 = to_cairo_big_int(p)
-    %}
-
-    let (r) = remainder(x, p)
-    
-    %{
-        assert from_cairo_big_int(ids.r.d0, ids.r.d1, ids.r.d2) == x % p
-    %}
-
-    return ()
-end
-
 
 func test_multiexp{output_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
     alloc_locals
@@ -166,9 +73,5 @@ end
 func main{output_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
     alloc_locals
     test_multiexp()
-
-    test_remainder()
-    test_inverse_mod_p()
-    test_variable_exponentiation()
     return()
 end

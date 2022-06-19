@@ -1,10 +1,9 @@
-from common_ec_cairo.ec.ec import EcPoint
-from common_ec_cairo.ec.bigint import BigInt3
+from starkware.cairo.common.ec_point import EcPoint
 
 struct TranscriptEntry:
     member L: EcPoint
     member R: EcPoint
-    member x: BigIntw3
+    member x: felt
 end
 
 struct Transcript:
@@ -17,7 +16,7 @@ end
 # Represents the proof passed to the verifier
 # not including the transcript entries
 struct ProofInnerproduct2:
-    member a: BigInt3
-    member b: BigInt3
+    member a: felt
+    member b: felt
     member n: felt
 end
