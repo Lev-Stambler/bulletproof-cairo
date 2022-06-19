@@ -2,7 +2,7 @@
 #!/bin/sh
 
 # With the P224 prime
-cairo-compile src/tests/innerproduct-test.cairo --output out/svc.json
+cairo-compile tests/test_innerproduct.cairo --output out/svc.json
 
 cairo-run --program=out/svc.json \
     --print_output --layout=all

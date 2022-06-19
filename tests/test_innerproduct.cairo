@@ -8,7 +8,7 @@ from src.structs import TranscriptEntry
 from src.structs import ProofInnerproduct2
 
 # Return 1 if the proof is verified, otherwise return 0
-func test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_ptr: EcOpBuiltin*}(i_rounds:felt):
+func _test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_ptr: EcOpBuiltin*}(i_rounds:felt):
     alloc_locals
 
     local transcript: Transcript*
@@ -29,11 +29,11 @@ func test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_ptr
         from random import randint
         from fastecdsa.curve import secp256k1, Curve
 
-        from pippenger.group import EC
+        from group import EC
         from innerproduct.inner_product_prover import NIProver, FastNIProver2
         from innerproduct.inner_product_verifier import SUPERCURVE, Verifier1, Verifier2
         from utils.commitments import vector_commitment
-        from utils.utils import ModP, mod_hash, inner_product, set_ec_points, to_cairo_big_int
+        from utils.utils import ModP, mod_hash, inner_product, set_ec_points
         from utils.elliptic_curve_hash import elliptic_hash_secp256k1
 
         # Always have the same seeds for easier test consistancy
@@ -88,8 +88,8 @@ func test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_ptr
 end
 
 func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_ptr: EcOpBuiltin*}():
-    test_with_i_rounds(0)
-    test_with_i_rounds(1)
-    test_with_i_rounds(2)
+    _test_with_i_rounds(0)
+    _test_with_i_rounds(1)
+    _test_with_i_rounds(2)
     return ()
 end

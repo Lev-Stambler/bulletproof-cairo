@@ -4,6 +4,7 @@ from src.math_utils import multi_exp, ec_mul
 from src.constants import P224_Order
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 
+# TODO: update
 func test_multiexp{output_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}():
     alloc_locals
 
@@ -16,7 +17,6 @@ func test_multiexp{output_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
         sys.path.insert(1, './python_bulletproofs/src')
 
         from utils.elliptic_curve_hash import elliptic_hash_P224, elliptic_hash_secp256k1
-        from utils.utils import to_cairo_big_int
         from pippenger import Pip256k1
         from pippenger.group import EC
 
