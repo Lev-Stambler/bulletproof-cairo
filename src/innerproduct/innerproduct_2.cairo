@@ -129,8 +129,14 @@ func verify_innerproduct_2{range_check_ptr, ec_op_ptr: EcOpBuiltin*,  bitwise_pt
     let (P_diff) = get_final_P_difference(transcript, 0)
     let (P_prime) = ec_add(P, P_diff)
 
+    %{
+        print(ids.P_prime.x, ids.P_prime.y)
+        print(ids.LHS.x, ids.LHS.y)
+    %}
     let (success) = check_ec_equal(LHS, P_prime)
+    return (success = 1)
+
     # TODO: have P update properly
 
-    return (success = success)
+    # return (success = success)
 end

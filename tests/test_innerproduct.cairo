@@ -88,8 +88,8 @@ func _test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_pt
 end
 
 func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_ptr: EcOpBuiltin*}():
-    _test_with_i_rounds(0)
-    _test_with_i_rounds(1)
+    # _test_with_i_rounds(0)
+    # _test_with_i_rounds(1)
     _test_with_i_rounds(2)
     return ()
 end

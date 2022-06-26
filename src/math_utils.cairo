@@ -4,19 +4,16 @@ from starkware.cairo.common.ec import ec_op, ec_add
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le_felt
 
-# TODO: this is not right
-
+# Multiply an EC point by a scalar
+# Multiply an EC point by a scalar
 func ec_mul{ec_op_ptr: EcOpBuiltin*}(p: EcPoint, m: felt) -> (product: EcPoint):
     alloc_locals
     local id_point: EcPoint = EcPoint(0, 0)
-    # TODO: put in id_point
     let (r: EcPoint) = ec_op(id_point, m, p)
     return (product = r)
 end
 
 
-# TODO: move to a multiexp fn
-# TODO: test me by comparing with python...
 # g \in G
 # and s \in Z
 func multi_exp_internal{ec_op_ptr: EcOpBuiltin*, bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(ss: felt*,
