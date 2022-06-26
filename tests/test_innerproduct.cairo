@@ -21,7 +21,6 @@ func _test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_pt
 
     %{
         import sys
-
         sys.path.insert(1, './python_bulletproofs')
         sys.path.insert(1, './python_bulletproofs/src')
 
@@ -65,6 +64,7 @@ func _test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_pt
         b = [mod_hash(str(i).encode() + seeds[4], p) for i in range(N)]
         P = vector_commitment(g, h, a, b) + inner_product(a, b) * u
         set_ec_points(ids, segments, memory, "P", [P])
+        # OHHHHHHHHHHHHHHHHHH :( q does not equal to starknet prime. But, we are working over q...
     %}
 
     %{
@@ -89,7 +89,7 @@ end
 
 func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_ptr: EcOpBuiltin*}():
     # _test_with_i_rounds(0)
-    # _test_with_i_rounds(1)
-    _test_with_i_rounds(2)
+    _test_with_i_rounds(1)
+    # _test_with_i_rounds(2)
     return ()
 end

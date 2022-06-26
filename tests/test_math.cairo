@@ -116,7 +116,7 @@ end
 # TODO: actually run
 func main{output_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_ptr: EcOpBuiltin*}():
     alloc_locals
-    # test_multiexp()
+    test_multiexp()
     test_ec_mul()
     return()
 end
