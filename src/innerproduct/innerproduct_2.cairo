@@ -4,7 +4,7 @@ from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from src.structs import Transcript, TranscriptEntry, ProofInnerproduct2
 from starkware.cairo.common.ec_point import EcPoint
 from starkware.cairo.common.ec import ec_add
-from src.math_utils import multi_exp, check_ec_equal, ec_mul
+from src.math_utils import multi_exp, check_ec_equal, ec_mul, inv_mod_Q, mul_mod_Q
 from starkware.cairo.common.pow import pow
 from starkware.cairo.common.bitwise import bitwise_and 
 
@@ -31,17 +31,20 @@ func get_ssi{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(transcript: Transcr
 
     # A mask for the jth bit of a number at most 2 ** log_n - 1
     # the mask is just a 1 at the jth position
-    let (mask) = pow{range_check_ptr=range_check_ptr}(2, j)
+
+    # Bits are indexed from their starting position so we have to mask from the
+    # left hand side
+    let (mask) = pow{range_check_ptr=range_check_ptr}(2, log_n - j - 1)
     let (local b_i_j) = bitwise_and(i, mask)
 
     let (r) = get_ssi(transcript, i, j + 1)
     if b_i_j == 0:
-        let curr_mult = 1 / transcript.transcript_entries[j].x
-        let ssi = r * curr_mult
+        let (curr_mult: felt) = inv_mod_Q(transcript.transcript_entries[j].x)
+        let (ssi: felt) = mul_mod_Q(r, curr_mult)
         return (ssi = ssi)
     else:
         let curr_mult = transcript.transcript_entries[j].x
-        let ssi = r * curr_mult
+        let (ssi: felt) = mul_mod_Q(r, curr_mult)
         return (ssi = ssi)
     end
 end
@@ -52,13 +55,13 @@ func get_ss_and_inverse{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
         ssinv: felt*,
         n: felt,
         transcript: Transcript*,
-        i: felt
+        i: felt,
     )->(ss_ret: felt*, ssinv_ret: felt*):
     if i == n:
         return (ss_ret=ss, ssinv_ret=ssinv)
     end
     let (ssi: felt) = get_ssi(transcript, i, 0)
-    let ssi_inv: felt = 1 / ssi
+    let (ssi_inv: felt) = inv_mod_Q(ssi)
 
     assert ss[i] = ssi
     assert ssinv[i] = ssi_inv
@@ -70,8 +73,9 @@ end
 # TODO: this is quite slow and needs to be sped up
 func get_final_P_difference{range_check_ptr, ec_op_ptr: EcOpBuiltin*, bitwise_ptr: BitwiseBuiltin*}(transcript: Transcript*, i: felt) -> (P_diff: EcPoint): 
     alloc_locals
-    let x_inv: felt = 1 / transcript.transcript_entries[i].x
+    let (x_inv: felt) = inv_mod_Q(transcript.transcript_entries[i].x)
 
+    # TODO: single square
     let (curr_add_L_1: EcPoint) = ec_mul(transcript.transcript_entries[i].L, transcript.transcript_entries[i].x)
     let (curr_add_L: EcPoint) = ec_mul(curr_add_L_1, transcript.transcript_entries[i].x)
 
@@ -103,7 +107,8 @@ func verify_innerproduct_2{range_check_ptr, ec_op_ptr: EcOpBuiltin*,  bitwise_pt
         return (success = 0)
     end
 
-    let (ss, ssinv) = get_ss_and_inverse(ss, ssinv, proof.n, transcript, 0)
+    let (local ss, ssinv) = get_ss_and_inverse(ss, ssinv, proof.n, transcript, 0)
+
 
     # TODO: does the verifier have to do this step??? (its the suppa expensive one...)
     let (g: EcPoint) = multi_exp(ss, proof.n, gs)
@@ -115,6 +120,7 @@ func verify_innerproduct_2{range_check_ptr, ec_op_ptr: EcOpBuiltin*,  bitwise_pt
     
     # TODO: you can reduce this to 1 EC multiply by doing proof.a * proof.b once
     # a decent math_utils library for bigints is up
+    # TODO: go bac
     let (u_a: EcPoint) = ec_mul(u, proof.a)
     let (u_ab: EcPoint) = ec_mul(u_a, proof.b)
 
@@ -129,14 +135,8 @@ func verify_innerproduct_2{range_check_ptr, ec_op_ptr: EcOpBuiltin*,  bitwise_pt
     let (P_diff) = get_final_P_difference(transcript, 0)
     let (P_prime) = ec_add(P, P_diff)
 
-    %{
-        print(ids.P_prime.x, ids.P_prime.y)
-        print(ids.LHS.x, ids.LHS.y)
-    %}
     let (success) = check_ec_equal(LHS, P_prime)
-    return (success = 1)
-
-    # TODO: have P update properly
-
-    # return (success = success)
+    return (success = success)
 end
+
+# TODO: speed up w/ Cleopatra

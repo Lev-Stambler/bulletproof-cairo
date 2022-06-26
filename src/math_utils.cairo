@@ -4,6 +4,8 @@ from starkware.cairo.common.ec import ec_op, ec_add
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le_felt
 
+const Q = 3618502788666131213697322783095070105526743751716087489154079457884512865583
+
 # Multiply an EC point by a scalar
 # Multiply an EC point by a scalar
 func ec_mul{ec_op_ptr: EcOpBuiltin*}(p: EcPoint, m: felt) -> (product: EcPoint):
@@ -11,6 +13,54 @@ func ec_mul{ec_op_ptr: EcOpBuiltin*}(p: EcPoint, m: felt) -> (product: EcPoint):
     local id_point: EcPoint = EcPoint(0, 0)
     let (r: EcPoint) = ec_op(id_point, m, p)
     return (product = r)
+end
+
+# TODO: add tests
+func inv_mod_Q(a: felt) -> (inv: felt):
+    alloc_locals
+    local inv: felt
+    local multi: felt
+    %{
+        import sys
+        import math
+        sys.path.insert(1, './python_bulletproofs')
+        sys.path.insert(1, './python_bulletproofs/src')
+
+        from utils.utils import ModP, mod_hash, inner_product, set_ec_points
+        Q = ids.Q + PRIME
+        x = ModP(ids.a, Q)
+        ids.inv = inv = x.inv().x
+
+        # multi = math.floor((inv * a % PRIME) / Q)
+        # print("M", multi)
+        # ids.multi = multi
+    %}
+    # TODO: how to asserthh
+    # assert inv * a - 1 = Q 
+    return (inv=inv)
+end
+
+# # TODO: test and assert
+func mul_mod_Q(a: felt, b: felt) -> (prod: felt):
+    alloc_locals
+    local prod: felt
+    %{
+        import sys
+        sys.path.insert(1, './python_bulletproofs')
+        sys.path.insert(1, './python_bulletproofs/src')
+
+        from utils.utils import ModP, mod_hash, inner_product, set_ec_points
+        a = ModP(ids.a, ids.Q + PRIME)
+        b = ModP(ids.b, ids.Q + PRIME)
+        ids.prod = (a * b).x
+    %}
+    # a should either equal the mod or be Q off from the mod
+    # if (rem - a) != Q:
+    #     if rem != a:
+    #         assert true = false
+    #     end
+    # end
+    return (prod=prod)
 end
 
 
