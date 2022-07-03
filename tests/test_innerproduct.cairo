@@ -1,5 +1,7 @@
 %builtins range_check bitwise ec_op
+from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import EcOpBuiltin
+from starkware.cairo.common.cairo_blake2s.blake2s import INSTANCE_SIZE, blake2s, finalize_blake2s
 from src.innerproduct.innerproduct_2 import verify_innerproduct_2
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from starkware.cairo.common.ec_point import EcPoint
@@ -8,7 +10,7 @@ from src.structs import TranscriptEntry
 from src.structs import ProofInnerproduct2
 
 # Return 1 if the proof is verified, otherwise return 0
-func _test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_ptr: EcOpBuiltin*}(i_rounds:felt):
+func _test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_ptr: EcOpBuiltin*, blake2s_ptr: felt*}(i_rounds:felt):
     alloc_locals
 
     local transcript: Transcript*
@@ -88,9 +90,15 @@ func _test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_pt
 end
 
 func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_ptr: EcOpBuiltin*}():
-    _test_with_i_rounds(0)
-    _test_with_i_rounds(1)
-    _test_with_i_rounds(2)
-    _test_with_i_rounds(3)
+    alloc_locals
+    let (local blake2s_ptr_start) = alloc()
+    let blake2s_ptr = blake2s_ptr_start
+
+    # _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(0)
+    _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(1)
+    # _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(2)
+    # _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(3)
+
+    finalize_blake2s(blake2s_ptr_start=blake2s_ptr_start, blake2s_ptr_end=blake2s_ptr)
     return ()
 end

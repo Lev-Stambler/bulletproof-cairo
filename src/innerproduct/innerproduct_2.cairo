@@ -5,16 +5,24 @@ from src.structs import Transcript, TranscriptEntry, ProofInnerproduct2
 from starkware.cairo.common.ec_point import EcPoint
 from starkware.cairo.common.ec import ec_add
 from src.math_utils import multi_exp, check_ec_equal, ec_mul, inv_mod_Q, mul_mod_Q
+from src.hash import blake2s_hash_felts
 from starkware.cairo.common.pow import pow
 from starkware.cairo.common.bitwise import bitwise_and 
 
 # Return a 1 if the transcript was successfully verified
-func verify_transcript_inner_product_2(transcript: Transcript*, i: felt)
-    -> (success: felt):
-    # SHIIIIIIII
-    # TODO:... may have to have an inner function...
-    # TODO: verify n rounds = log n
-    return (success = 1)
+func verify_transcript_inner_product_2{bitwise_ptr : BitwiseBuiltin*, range_check_ptr, blake2s_ptr: felt*}(transcript: Transcript*, i: felt) -> (success: felt):
+    alloc_locals
+    if i == transcript.n_rounds:
+        return (success = 1)
+    end
+    # Offset the length by 1
+    # 1 elements for the seed, then 5 for each entry, not including the last hash
+    let transcript_felts: felt* = cast(transcript, felt*)
+    let (hashed: felt) = blake2s_hash_felts(transcript_felts + 1, (i + 1) * 5) 
+    assert hashed = cast(transcript + 2, TranscriptEntry*)[i].x
+    
+    let (local recur_success: felt) = verify_transcript_inner_product_2(transcript, i + 1)
+    return (success = recur_success)
 end
 
 func get_ssi{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(transcript: Transcript*, i: felt, j: felt) ->
@@ -40,11 +48,11 @@ func get_ssi{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(transcript: Transcr
 
     let (r) = get_ssi(transcript, i, j + 1)
     if b_i_j == 0:
-        let (curr_mult: felt) = inv_mod_Q(transcript.transcript_entries[j].x)
+        let (curr_mult: felt) = inv_mod_Q(cast(transcript + 2, TranscriptEntry*)[j].x)
         let (ssi: felt) = mul_mod_Q(r, curr_mult)
         return (ssi = ssi)
     else:
-        let curr_mult = transcript.transcript_entries[j].x
+        let curr_mult = cast(transcript + 2, TranscriptEntry*)[j].x
         let (ssi: felt) = mul_mod_Q(r, curr_mult)
         return (ssi = ssi)
     end
@@ -74,13 +82,17 @@ end
 # TODO: this is quite slow and needs to be sped up
 func get_final_P_difference{range_check_ptr, ec_op_ptr: EcOpBuiltin*, bitwise_ptr: BitwiseBuiltin*}(transcript: Transcript*, i: felt) -> (P_diff: EcPoint): 
     alloc_locals
-    let (x_inv: felt) = inv_mod_Q(transcript.transcript_entries[i].x)
+    let transcript_entries: TranscriptEntry* = cast(transcript + 2, TranscriptEntry*)
+    let (x_inv: felt) = inv_mod_Q(transcript_entries[i].x)
 
     # TODO: single square
-    let (curr_add_L_1: EcPoint) = ec_mul(transcript.transcript_entries[i].L, transcript.transcript_entries[i].x)
-    let (curr_add_L: EcPoint) = ec_mul(curr_add_L_1, transcript.transcript_entries[i].x)
+    %{
+        print("AAAAAAAA", ids.transcript.n_rounds, ids.i)
+    %}
+    let (curr_add_L_1: EcPoint) = ec_mul(transcript_entries[i].L, transcript_entries[i].x)
+    let (curr_add_L: EcPoint) = ec_mul(curr_add_L_1, transcript_entries[i].x)
 
-    let (curr_add_R_1: EcPoint) = ec_mul(transcript.transcript_entries[i].R, x_inv)
+    let (curr_add_R_1: EcPoint) = ec_mul(transcript_entries[i].R, x_inv)
     let (curr_add_R: EcPoint) = ec_mul(curr_add_R_1, x_inv)
     let (curr_diff: EcPoint) = ec_add(curr_add_L, curr_add_R)
 
@@ -94,7 +106,7 @@ end
 
 
 # Return 0 if successful, otherwise return 1
-func verify_innerproduct_2{range_check_ptr, ec_op_ptr: EcOpBuiltin*,  bitwise_ptr: BitwiseBuiltin*}(gs: EcPoint*, hs: EcPoint*, u: EcPoint, P: EcPoint, proof: ProofInnerproduct2, transcript: Transcript*) ->
+func verify_innerproduct_2{range_check_ptr, ec_op_ptr: EcOpBuiltin*,  bitwise_ptr: BitwiseBuiltin*, blake2s_ptr: felt*}(gs: EcPoint*, hs: EcPoint*, u: EcPoint, P: EcPoint, proof: ProofInnerproduct2, transcript: Transcript*) ->
         (success: felt):
 
     alloc_locals

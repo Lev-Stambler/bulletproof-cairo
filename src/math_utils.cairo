@@ -1,4 +1,5 @@
 from starkware.cairo.common.cairo_builtins import EcOpBuiltin
+from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.ec_point import EcPoint
 from starkware.cairo.common.ec import ec_op, ec_add
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
@@ -14,6 +15,34 @@ func ec_mul{ec_op_ptr: EcOpBuiltin*}(p: EcPoint, m: felt) -> (product: EcPoint):
     let (r: EcPoint) = ec_op(id_point, m, p)
     return (product = r)
 end
+
+func uint256_to_mod_Q(a: Uint256) -> (modded: felt):
+    alloc_locals
+    local modded: felt
+    %{
+        import sys
+        import math
+        sys.path.insert(1, './python_bulletproofs')
+        sys.path.insert(1, './python_bulletproofs/src')
+
+        from utils.utils import ModP, mod_hash, inner_product, set_ec_points
+        Q = ids.Q + PRIME
+
+        lower = ids.a.low
+        upper = ids.a.high
+        a = upper * 2 ** 128 + lower
+        print(a, a % Q, Q)
+        ids.modded = a % Q
+        # print("AAAA", a)
+        # x = ModP(a, Q)
+        # print("AAAXXX", x.x)
+        # ids.modded = (x.x % ids.Q) # TODO: thing with Q write here...
+    %}
+    # TODO: how to asserthh
+    return (modded=modded)
+end
+
+
 
 # TODO: add tests
 func inv_mod_Q(a: felt) -> (inv: felt):

@@ -1,5 +1,6 @@
 from starkware.cairo.common.ec_point import EcPoint
 
+# An entry into a transcript, takes 5 felt memory addresses
 struct TranscriptEntry:
     member L: EcPoint
     member R: EcPoint
@@ -7,9 +8,9 @@ struct TranscriptEntry:
 end
 
 struct Transcript:
-    member transcript_seed: felt
     member n_rounds: felt
-    member transcript_entries: TranscriptEntry*
+    member transcript_seed: felt
+    member transcript_entries: TranscriptEntry
 end
 
 
