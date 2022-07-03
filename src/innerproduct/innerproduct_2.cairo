@@ -11,6 +11,7 @@ from starkware.cairo.common.bitwise import bitwise_and
 # Return a 1 if the transcript was successfully verified
 func verify_transcript_inner_product_2(transcript: Transcript*, i: felt)
     -> (success: felt):
+    # SHIIIIIIII
     # TODO:... may have to have an inner function...
     # TODO: verify n rounds = log n
     return (success = 1)

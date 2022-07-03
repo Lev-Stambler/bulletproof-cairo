@@ -1,7 +1,7 @@
 %builtins output range_check
 from src.structs import Transcript, TranscriptEntry
 
-# TODO: actually run
+# TODO: update
 func main{output_ptr : felt*, range_check_ptr: felt}():
     alloc_locals
     local transcript: Transcript*

@@ -6,7 +6,6 @@ from src.constants import P224_Order
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from starkware.cairo.common.cairo_builtins import EcOpBuiltin
 
-# TODO: update
 func test_multiexp{output_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_ptr: EcOpBuiltin*}():
     alloc_locals
 

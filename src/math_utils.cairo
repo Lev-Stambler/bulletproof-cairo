@@ -64,6 +64,8 @@ func mul_mod_Q(a: felt, b: felt) -> (prod: felt):
 end
 
 
+# Multi exponentiate `gs` with `ss` as defined at the top of page 12 of the Bulletproof paper
+# where
 # g \in G
 # and s \in Z
 func multi_exp_internal{ec_op_ptr: EcOpBuiltin*, bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(ss: felt*,
@@ -83,6 +85,7 @@ func multi_exp_internal{ec_op_ptr: EcOpBuiltin*, bitwise_ptr : BitwiseBuiltin*, 
 end
 
 
+# Wrapper to multi exponentiate `gs` with `ss` as defined at the top of page 12 of the Bulletproof paper
 func multi_exp{ec_op_ptr: EcOpBuiltin*, bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(ss: felt*, n: felt, gs: EcPoint*) -> (g: EcPoint):
     let (g: EcPoint) = multi_exp_internal(ss, n, gs, 0)
     return (g=g)

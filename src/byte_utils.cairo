@@ -3,7 +3,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bitwise import bitwise_and, bitwise_not
 from starkware.cairo.common.math_cmp import is_le_felt
 
-# Felts to 8 32 bit word
+# Wrapper function to return n*8 32-bit-words, little endian words representing the input felts
 func felts_to_32_bit_word{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
     input: felt*,
     n: felt
@@ -29,7 +29,7 @@ func _felts_to_32_bit_word{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
 end
 
 
-# Returns 8 32 bit words, little endian, representing the input felt
+# Wrapper function to return 8 32-bit-words, little endian, representing the input felt
 func felt_to_32_bit_word{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
     input: felt
 ) -> (output: felt*):
@@ -39,6 +39,7 @@ func felt_to_32_bit_word{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
     return (output = ptr)
 end
 
+# Returns 8-32-bit words, little endian, representing the input felt when i = 0
 func _felt_to_32_bit_word{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
     input: felt,
     output: felt*,
@@ -53,9 +54,6 @@ func _felt_to_32_bit_word{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
     assert [output + i] = anded
     let (local lt) = is_le_felt{range_check_ptr=range_check_ptr}(2 ** 32, input)
     if lt == 1:
-        # TODO: this is not how bit shift works...
-        # TODO: sep shift fn
-        # This can be a constant
         let (mask) = bitwise_not(2 ** 32 - 1)
         let (masked) = bitwise_and(mask, input)
         let new_input = masked / 2 ** 32
