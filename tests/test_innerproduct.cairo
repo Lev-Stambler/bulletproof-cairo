@@ -97,6 +97,7 @@ func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_ptr: EcOpBuiltin*
     _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(2)
     _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(3)
     _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(4)
+    _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(5)
 
     finalize_blake2s(blake2s_ptr_start=blake2s_ptr_start, blake2s_ptr_end=blake2s_ptr)
     return ()
