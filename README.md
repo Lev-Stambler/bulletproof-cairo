@@ -3,8 +3,8 @@
 which allow for short inner product, range, shuffle, and arithmetic circuit proofs.
 Bulletproofs also support faster MPC protocols. 
 
-This repo implements the proposed inner product proofs
-but can be extended to range, shuffle proofs, and arithmetic circuit proofs.
+This repo implements the inner product proofs (protocol 2)
+but can be extended to range, shuffle, and arithmetic circuit proofs.
 
 ## Getting Started
 1. Make sure to [install Cairo](https://www.cairo-lang.org/docs/quickstart.html) and [install Protostar](https://docs.swmansion.com/protostar/docs/tutorials/installation)
