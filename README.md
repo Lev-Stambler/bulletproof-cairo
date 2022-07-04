@@ -53,3 +53,6 @@ for more details, see `./tests/test_innerproduct.cairo`
 - [ ] Add Protostar tests once the `ec_point` builtin is fully supported by Protostar and Starknet
 - [ ] Integrate with the Cleopatra VM
 - [ ] Add range proofs
+
+## Contact me
+To reach me with questions, find me at [levsadev@gmail.com](mailto:levsadev@gmail.com)
