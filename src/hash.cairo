@@ -11,7 +11,6 @@ func blake2s_hash_felts{bitwise_ptr : BitwiseBuiltin*, range_check_ptr, blake2s_
     alloc_locals
     %{
         l = [memory[ids.nums + i] for i in range(ids.n)]
-        print("HHHH", l, ids.n)
 
         import sys
         sys.path.insert(1, './python_bulletproofs')

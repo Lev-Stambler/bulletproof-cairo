@@ -47,7 +47,6 @@ func _test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_pt
         i = ids.i_rounds
 
 
-        # TODO: the following be a constant
         p = SUPERCURVE.q
         N = 2 ** i
         g = [elliptic_hash_secp256k1(str(i).encode() + seeds[0], CURVE) for i in range(N)]
@@ -66,7 +65,6 @@ func _test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_pt
         b = [mod_hash(str(i).encode() + seeds[4], p) for i in range(N)]
         P = vector_commitment(g, h, a, b) + inner_product(a, b) * u
         set_ec_points(ids, segments, memory, "P", [P])
-        # OHHHHHHHHHHHHHHHHHH :( q does not equal to starknet prime. But, we are working over q...
     %}
 
     %{
@@ -94,13 +92,12 @@ func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_ptr: EcOpBuiltin*
     let (local blake2s_ptr_start) = alloc()
     let blake2s_ptr = blake2s_ptr_start
 
-    # _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(0)
+    _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(0)
     _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(1)
     _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(2)
     _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(3)
+    _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(4)
 
     finalize_blake2s(blake2s_ptr_start=blake2s_ptr_start, blake2s_ptr_end=blake2s_ptr)
     return ()
 end
-# TODO: clean up, math utils/ tests (clean up utils tests as well). Document, add
-# support for the nother compiler... post up!!!

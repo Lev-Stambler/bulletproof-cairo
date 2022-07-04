@@ -9,6 +9,19 @@ const Q = 3618502788666131213697322783095070105526743751716087489154079457884512
 const Q_high = 10633823966279327296825105735305134079
 const Q_low = 243918903305429252644362009180409056559
 
+func _to_uint256(a: felt) -> (r: Uint256):
+    alloc_locals
+    local high
+    local low
+    %{
+        ids.high = ids.a // 2 ** 128
+        ids.low = ids.a % 2 ** 128
+    %}
+    assert a = high * 2 ** 128 + low
+    let r = Uint256(low=low, high=high)
+    return (r = r)
+end
+
 # Explicitly convert a uint256 to a felt
 func _uint256_to_mod_Q_direct(a: Uint256) -> (r: felt):
     return (r= 2** 128 * a.high + a .low)
@@ -24,45 +37,13 @@ func uint256_to_mod_Q{range_check_ptr}(a: Uint256) -> (modded: felt):
     return (modded=rem_felt)
 end
 
-# TODO: add tests
-func inv_mod_Q{range_check_ptr}(a: felt) -> (inv: felt):
-    alloc_locals
-    local inv_low: felt
-    local inv_high: felt
-    local multi: felt
-    %{
-        import sys
-        import math
-        sys.path.insert(1, './python_bulletproofs')
-        sys.path.insert(1, './python_bulletproofs/src')
-
-        from utils.utils import ModP, mod_hash, inner_product, set_ec_points
-        Q = ids.Q + PRIME
-        x = ModP(ids.a, Q)
-        inv = x.inv().x
-        ids.inv_low = inv % 2 ** 128
-        ids.inv_high = inv // 2 ** 128
-    %}
-    let inv_uint256 = Uint256(inv_low, inv_high)
-    # TODO: how to asserthh
-    # assert inv * a - 1 = Q 
-    let (inv) = _uint256_to_mod_Q_direct(inv_uint256)
-    return (inv=inv)
-end
-
-func _to_uint256(a: felt) -> (r: Uint256):
-    alloc_locals
-    local high
-    local low
-    %{
-        ids.high = ids.a // 2 ** 128
-        ids.low = ids.a % 2 ** 128
-    %}
-    assert a = high * 2 ** 128 + low
-    let r = Uint256(low=low, high=high)
-    return (r = r)
-end
-
+# Carry out multplication of field elements mod q via a python hint.
+# The hint is then verified using Uin256 and subsequent multplication
+# We can ensure that, for some proof k:
+# k * Q + (ab mod Q) = ab over the integers.
+# Because uint256_mul gives us a 512 integer and any number mod Q is at most
+# 251 bits, we are working in a sufficiently large field to pretend that we are
+# working in the integers
 func _mul_mod_Q{range_check_ptr}(a: Uint256, b: Uint256) -> (prod: Uint256):
     alloc_locals
     local prod_mod_q_low: felt
@@ -93,7 +74,6 @@ func _mul_mod_Q{range_check_ptr}(a: Uint256, b: Uint256) -> (prod: Uint256):
     let Q_uint256 = Uint256(Q_low, Q_high)
     let prod_mod_q_uint256 = Uint256(prod_mod_q_low, prod_mod_q_high)
 
-    # TODO: to uint256 fn
     let (ab_prod_low: Uint256, ab_prod_high: Uint256) = uint256_mul(a, b)
 
     let (quot_q_low: Uint256, quot_q_high: Uint256) = uint256_mul(quotient, Q_uint256)
@@ -109,6 +89,38 @@ func _mul_mod_Q{range_check_ptr}(a: Uint256, b: Uint256) -> (prod: Uint256):
 
     
     return (prod=prod_mod_q_uint256)
+end
+
+# TODO: add tests
+# Calculate the inverse via a hint and then use _mul_mod_Q to verifiy the inverse
+func inv_mod_Q{range_check_ptr}(a: felt) -> (inv: felt):
+    alloc_locals
+    local inv_low: felt
+    local inv_high: felt
+    local multi: felt
+    %{
+        import sys
+        import math
+        sys.path.insert(1, './python_bulletproofs')
+        sys.path.insert(1, './python_bulletproofs/src')
+
+        from utils.utils import ModP, mod_hash, inner_product, set_ec_points
+        Q = ids.Q + PRIME
+        x = ModP(ids.a, Q)
+        inv = x.inv().x
+        ids.inv_low = inv % 2 ** 128
+        ids.inv_high = inv // 2 ** 128
+    %}
+    let inv_uint256 = Uint256(inv_low, inv_high)
+    let (a_uint256) = _to_uint256(a)
+
+    # Ensure that the inverse is correct via multiplication check    
+    let (prod) = _mul_mod_Q(inv_uint256, a_uint256)
+    assert prod.high = 0
+    assert prod.low = 1
+
+    let (inv) = _uint256_to_mod_Q_direct(inv_uint256)
+    return (inv=inv)
 end
 
 func mul_mod_Q{range_check_ptr}(a: felt, b: felt) -> (prod: felt):

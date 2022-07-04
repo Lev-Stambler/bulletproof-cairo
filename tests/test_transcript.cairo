@@ -1,11 +1,9 @@
 %builtins output range_check
 from src.structs import Transcript, TranscriptEntry
 
-# TODO: update
 func main{output_ptr : felt*, range_check_ptr: felt}():
     alloc_locals
     local transcript: Transcript*
-    local transcript_entries: TranscriptEntry*
     %{
         import sys
         sys.path.insert(1, './python_bulletproofs')
@@ -35,8 +33,9 @@ func main{output_ptr : felt*, range_check_ptr: felt}():
 
         Transcript.convert_to_cairo(ids, memory, segments, transcript.digest)
     %}
-    assert [transcript_entries].x.d0 = 69
-    assert transcript_entries[1].x.d0 = 42
+    local transcript_entries: TranscriptEntry* = cast(transcript + 2, TranscriptEntry*)
+    assert transcript_entries[0].x = 69
+    assert transcript_entries[1].x = 42
     assert transcript.transcript_seed = 11
     assert transcript.n_rounds = 2
     return()

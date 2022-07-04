@@ -11,14 +11,16 @@ from starkware.cairo.common.pow import pow
 from starkware.cairo.common.bitwise import bitwise_and 
 
 # Return a 1 if the transcript was successfully verified
+# Here we just check that all the x values are determined by the hash of the prior values in the transcript
 func verify_transcript_inner_product_2{bitwise_ptr : BitwiseBuiltin*, range_check_ptr, blake2s_ptr: felt*}(transcript: Transcript*, i: felt) -> (success: felt):
     alloc_locals
     if i == transcript.n_rounds:
         return (success = 1)
     end
+    let transcript_felts: felt* = cast(transcript, felt*)
+
     # Offset the length by 1
     # 1 elements for the seed, then 5 for each entry, not including the last hash
-    let transcript_felts: felt* = cast(transcript, felt*)
     let (hashed: felt) = blake2s_hash_felts(transcript_felts + 1, (i + 1) * 5) 
     assert hashed = cast(transcript + 2, TranscriptEntry*)[i].x
     
@@ -26,6 +28,7 @@ func verify_transcript_inner_product_2{bitwise_ptr : BitwiseBuiltin*, range_chec
     return (success = recur_success)
 end
 
+# As per the bottom of page 15 of the paper, get the each entry in the s vector
 func get_ssi{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(transcript: Transcript*, i: felt, j: felt) ->
         (ssi: felt):
 
@@ -59,7 +62,7 @@ func get_ssi{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(transcript: Transcr
     end
 end
 
-# As per page 15 of the paper
+# As per the bottom of page 15 of the paper, get the s vector and its inverse
 func get_ss_and_inverse{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
         ss: felt*,
         ssinv: felt*,
@@ -80,13 +83,13 @@ func get_ss_and_inverse{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(
     return (ss_ret=ss, ssinv_ret=ssinv)
 end
 
-# TODO: this is quite slow and needs to be sped up
+# Get the value to multiply the initial commitment, P, by to get P'
+# This follows equation (31) on page 16 of the bulletproof paper
 func get_final_P_difference{range_check_ptr, ec_op_ptr: EcOpBuiltin*, bitwise_ptr: BitwiseBuiltin*}(transcript: Transcript*, i: felt) -> (P_diff: EcPoint): 
     alloc_locals
     let transcript_entries: TranscriptEntry* = cast(transcript + 2, TranscriptEntry*)
     let (x_inv: felt) = inv_mod_Q(transcript_entries[i].x)
 
-    # TODO: single square
     let (curr_add_L_1: EcPoint) = ec_mul(transcript_entries[i].L, transcript_entries[i].x)
     let (curr_add_L: EcPoint) = ec_mul(curr_add_L_1, transcript_entries[i].x)
 
@@ -103,6 +106,7 @@ func get_final_P_difference{range_check_ptr, ec_op_ptr: EcOpBuiltin*, bitwise_pt
 end
 
 
+# Following page 16 of the Bullet proofs paper
 # Return 0 if successful, otherwise return 1
 func verify_innerproduct_2{range_check_ptr, ec_op_ptr: EcOpBuiltin*,  bitwise_ptr: BitwiseBuiltin*, blake2s_ptr: felt*}(gs: EcPoint*, hs: EcPoint*, u: EcPoint, P: EcPoint, proof: ProofInnerproduct2, transcript: Transcript*) ->
         (success: felt):
@@ -118,10 +122,10 @@ func verify_innerproduct_2{range_check_ptr, ec_op_ptr: EcOpBuiltin*,  bitwise_pt
         return (success = 0)
     end
 
+    # Get the s vector and all corresponding inverses (see page 15 of the paper)
     let (local ss, ssinv) = get_ss_and_inverse(ss, ssinv, proof.n, transcript, 0)
 
 
-    # TODO: does the verifier have to do this step??? (its the suppa expensive one...)
     let (g: EcPoint) = multi_exp(ss, proof.n, gs)
     let (h: EcPoint) = multi_exp(ssinv, proof.n, hs)
 
@@ -129,9 +133,6 @@ func verify_innerproduct_2{range_check_ptr, ec_op_ptr: EcOpBuiltin*,  bitwise_pt
 
     let (h_b: EcPoint) = ec_mul(h, proof.b)
     
-    # TODO: you can reduce this to 1 EC multiply by doing proof.a * proof.b once
-    # a decent math_utils library for bigints is up
-    # TODO: go bac
     let (u_a: EcPoint) = ec_mul(u, proof.a)
     let (u_ab: EcPoint) = ec_mul(u_a, proof.b)
 
@@ -149,5 +150,3 @@ func verify_innerproduct_2{range_check_ptr, ec_op_ptr: EcOpBuiltin*,  bitwise_pt
     let (success) = check_ec_equal(LHS, P_prime)
     return (success = success)
 end
-
-# TODO: speed up w/ Cleopatra
