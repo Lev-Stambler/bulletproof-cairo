@@ -7,7 +7,7 @@ This repo implements the proposed inner product proofs
 but can be extended to range, shuffle proofs, and arithmetic circuit proofs.
 
 ## Getting Started
-1. Make sure to [install Cairo](https://www.cairo-lang.org/docs/quickstart.html) and [install protostar](https://docs.swmansion.com/protostar/docs/tutorials/installation)
+1. Make sure to [install Cairo](https://www.cairo-lang.org/docs/quickstart.html) and [install Protostar](https://docs.swmansion.com/protostar/docs/tutorials/installation)
 2. Clone the repo with recursed submodules:
 ```bash
 git clone https://github.com/Lev-Stambler/bulletproof-cairo --recurse-submodules && cd bulletproof-cairo
