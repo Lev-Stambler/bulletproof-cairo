@@ -36,7 +36,6 @@ func test_run_blake2s_and_finalize{range_check_ptr, bitwise_ptr : BitwiseBuiltin
         blake2s_ptr=blake2s_ptr}(felts, 4)
 
     %{
-        print("nonpyt", ids.hashed, "pythonret", pythonret.x)
         assert(ids.hashed == pythonret.x)
     %}
 

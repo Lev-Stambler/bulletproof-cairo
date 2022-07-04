@@ -4,7 +4,8 @@ from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from src.structs import Transcript, TranscriptEntry, ProofInnerproduct2
 from starkware.cairo.common.ec_point import EcPoint
 from starkware.cairo.common.ec import ec_add
-from src.math_utils import multi_exp, check_ec_equal, ec_mul, inv_mod_Q, mul_mod_Q
+from src.math_utils import multi_exp, check_ec_equal, ec_mul
+from src.q_field import inv_mod_Q, mul_mod_Q
 from src.hash import blake2s_hash_felts
 from starkware.cairo.common.pow import pow
 from starkware.cairo.common.bitwise import bitwise_and 
@@ -86,9 +87,6 @@ func get_final_P_difference{range_check_ptr, ec_op_ptr: EcOpBuiltin*, bitwise_pt
     let (x_inv: felt) = inv_mod_Q(transcript_entries[i].x)
 
     # TODO: single square
-    %{
-        print("AAAAAAAA", ids.transcript.n_rounds, ids.i)
-    %}
     let (curr_add_L_1: EcPoint) = ec_mul(transcript_entries[i].L, transcript_entries[i].x)
     let (curr_add_L: EcPoint) = ec_mul(curr_add_L_1, transcript_entries[i].x)
 

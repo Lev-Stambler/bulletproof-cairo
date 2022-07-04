@@ -96,9 +96,11 @@ func main{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_ptr: EcOpBuiltin*
 
     # _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(0)
     _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(1)
-    # _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(2)
-    # _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(3)
+    _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(2)
+    _test_with_i_rounds{blake2s_ptr=blake2s_ptr}(3)
 
     finalize_blake2s(blake2s_ptr_start=blake2s_ptr_start, blake2s_ptr_end=blake2s_ptr)
     return ()
 end
+# TODO: clean up, math utils/ tests (clean up utils tests as well). Document, add
+# support for the nother compiler... post up!!!
