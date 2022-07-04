@@ -12,6 +12,11 @@ but can be extended to range, shuffle proofs, and arithmetic circuit proofs.
 ```bash
 git clone https://github.com/Lev-Stambler/bulletproof-cairo --recurse-submodules && cd bulletproof-cairo
 ```
+3. Source the cairo environment: `source ~/cairo_venv/bin/activate`
+4. Install the Python requirements
+```shell
+cd python_bulletproofs/ && pip install -r requirements.txt
+```
 
 ## Running a test of the inner product proof
 To run a simple set of innerproduct tests, run
