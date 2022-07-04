@@ -16,7 +16,7 @@ func test_multiexp{output_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
         sys.path.insert(1, './python_bulletproofs')
         sys.path.insert(1, './python_bulletproofs/src')
 
-        from utils.elliptic_curve_hash import elliptic_hash_secp256k1
+        from utils.elliptic_curve_hash import elliptic_hash
         from innerproduct.inner_product_verifier import SUPERCURVE as CURVE
         from group import EC
         from pippenger import PipCURVE
@@ -28,9 +28,9 @@ func test_multiexp{output_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuil
         for i, s in enumerate(ss_py):
             memory[ss + i] = s
 
-        gs_py = [elliptic_hash_secp256k1(str("AAAA").encode(), CURVE),
-                elliptic_hash_secp256k1(str("BBBB").encode(), CURVE),
-                elliptic_hash_secp256k1(str("BBBB").encode(), CURVE)]
+        gs_py = [elliptic_hash(str("AAAA").encode(), CURVE),
+                elliptic_hash(str("BBBB").encode(), CURVE),
+                elliptic_hash(str("BBBB").encode(), CURVE)]
 
         ids.gs = gs = segments.add()
         for i, g in enumerate(gs_py):
@@ -72,12 +72,12 @@ func test_ec_mul{output_ptr : felt*, range_check_ptr, bitwise_ptr: BitwiseBuilti
         sys.path.insert(1, './python_bulletproofs')
         sys.path.insert(1, './python_bulletproofs/src')
 
-        from utils.elliptic_curve_hash import elliptic_hash_secp256k1
+        from utils.elliptic_curve_hash import elliptic_hash
         from innerproduct.inner_product_verifier import SUPERCURVE as CURVE
         from group import EC
         from pippenger import PipCURVE
 
-        g_py = elliptic_hash_secp256k1(str("AAAA").encode(), CURVE)
+        g_py = elliptic_hash(str("AAAA").encode(), CURVE)
         scalars_array = [1, 2, 3, 4, 5]
 
         ids.g = g_cairo = segments.add()

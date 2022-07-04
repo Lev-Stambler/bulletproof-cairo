@@ -10,13 +10,13 @@ func main{output_ptr : felt*, range_check_ptr: felt}():
         sys.path.insert(1, './python_bulletproofs/src')
 
         from utils.transcript import Transcript
-        from utils.elliptic_curve_hash import elliptic_hash_secp256k1
+        from utils.elliptic_curve_hash import elliptic_hash
         from utils.utils import ModP, mod_hash, inner_product
         from fastecdsa.curve import secp256k1, Curve
 
         CURVE: Curve = secp256k1
-        L1 = elliptic_hash_secp256k1(str("AAAA").encode(), CURVE)
-        R1 = elliptic_hash_secp256k1(str("BBBB").encode(), CURVE)
+        L1 = elliptic_hash(str("AAAA").encode(), CURVE)
+        R1 = elliptic_hash(str("BBBB").encode(), CURVE)
         x = ModP(69, 100)
 
 

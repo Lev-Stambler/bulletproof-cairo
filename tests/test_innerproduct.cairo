@@ -35,7 +35,7 @@ func _test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_pt
         from innerproduct.inner_product_verifier import SUPERCURVE, Verifier1, Verifier2
         from utils.commitments import vector_commitment
         from utils.utils import ModP, mod_hash, inner_product, set_ec_points
-        from utils.elliptic_curve_hash import elliptic_hash_secp256k1
+        from utils.elliptic_curve_hash import elliptic_hash
 
         # Always have the same seeds for easier test consistancy
         # and debugging
@@ -49,9 +49,9 @@ func _test_with_i_rounds{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, ec_op_pt
 
         p = SUPERCURVE.q
         N = 2 ** i
-        g = [elliptic_hash_secp256k1(str(i).encode() + seeds[0], CURVE) for i in range(N)]
-        h = [elliptic_hash_secp256k1(str(i).encode() + seeds[1], CURVE) for i in range(N)]
-        u = elliptic_hash_secp256k1(seeds[2], CURVE)
+        g = [elliptic_hash(str(i).encode() + seeds[0], CURVE) for i in range(N)]
+        h = [elliptic_hash(str(i).encode() + seeds[1], CURVE) for i in range(N)]
+        u = elliptic_hash(seeds[2], CURVE)
 
         set_ec_points(ids, segments, memory, "u", [u])
 
