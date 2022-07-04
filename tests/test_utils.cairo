@@ -20,10 +20,11 @@ func test_felts_to_32{range_check_ptr: felt, bitwise_ptr: BitwiseBuiltin*}(n: fe
     %{
         bs = bytes([])
         for e in ls_py:
-            b += e.to_bytes(8 * 4, 'little')
-        for i, b in enumerate(bs):
+            bs += e.to_bytes(8 * 4, 'little')
+        for i in range(0, len(bs) // 4):
             words = ids.words
-            assert b == memory[words + i]
+            py_word = int.from_bytes(bs[i*4:(i+1)*4], 'little')
+            assert py_word == memory[words + i]
     %}
     
     return()
@@ -33,6 +34,6 @@ end
 func main{range_check_ptr: felt, bitwise_ptr: BitwiseBuiltin*}():
     alloc_locals
     
-    test_felts_to_32(4)
+    test_felts_to_32(6)
     return()
 end
