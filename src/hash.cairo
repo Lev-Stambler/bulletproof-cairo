@@ -23,12 +23,3 @@ func blake2s_hash_felts{bitwise_ptr : BitwiseBuiltin*, range_check_ptr, blake2s_
     let (output_felt: felt) = uint256_to_mod_Q(output_blake)
     return (output=output_felt)
 end
-
-# func _concact_output{range_check_ptr}(output_blake: Uint256) -> (output: felt):
-#     alloc_locals
-#     let shifted = output_blake.high * 2 ** 32
-
-#     let added = shifted + [outputs + i]
-#     let (output) = _concact_output(added, outputs, i + 1)
-#     return (output = output)
-# end
