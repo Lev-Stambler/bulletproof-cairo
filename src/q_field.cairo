@@ -91,7 +91,6 @@ func _mul_mod_Q{range_check_ptr}(a: Uint256, b: Uint256) -> (prod: Uint256):
     return (prod=prod_mod_q_uint256)
 end
 
-# TODO: add tests
 # Calculate the inverse via a hint and then use _mul_mod_Q to verifiy the inverse
 func inv_mod_Q{range_check_ptr}(a: felt) -> (inv: felt):
     alloc_locals
