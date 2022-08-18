@@ -56,3 +56,7 @@ for more details, see `./tests/test_innerproduct.cairo`
 
 ## Contact me
 To reach me with questions, find me at [levsadev@gmail.com](mailto:levsadev@gmail.com)
+
+## Disclaimer
+
+This codebase is experimental in nature and not production ready/ safe. The codebase should not be used in production contracts without further review, tests, and updates. 
