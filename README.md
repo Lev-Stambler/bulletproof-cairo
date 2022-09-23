@@ -9,7 +9,7 @@ but can be extended to range, shuffle, and arithmetic circuit proofs.
 ## Getting Started
 Before doing anything, make sure you are on Python version 3.10 or above.
 
-1. Make sure to [install Cairo](https://www.cairo-lang.org/docs/quickstart.html) and [install Protostar](https://docs.swmansion.com/protostar/docs/tutorials/installation)
+1. Make sure to [install Cairo](https://www.cairo-lang.org/docs/quickstart.html) and [install Protostar](https://docs.swmansion.com/protostar/docs/tutorials/installation). **Make sure that your Cairo version is at last v0.9.0**.
 2. Clone the repo with recursed submodules:
 ```bash
 git clone https://github.com/Lev-Stambler/bulletproof-cairo --recurse-submodules && cd bulletproof-cairo
